@@ -1,0 +1,156 @@
+export const SECTORS = [
+  { value: 'batiment', label: 'Batiment & BTP' },
+  { value: 'restauration', label: 'Restauration & Hotellerie' },
+  { value: 'bureau', label: 'Activites de bureau' },
+  { value: 'commerce', label: 'Commerce & Distribution' },
+  { value: 'industrie', label: 'Industrie & Production' },
+  { value: 'sante', label: 'Sante & Medico-social' },
+  { value: 'transport', label: 'Transport & Logistique' },
+  { value: 'agriculture', label: 'Agriculture & Agroalimentaire' },
+  { value: 'services', label: 'Services aux entreprises' },
+  { value: 'autre', label: 'Autre' },
+] as const;
+
+export const RISK_CATEGORIES_BY_SECTOR: Record<string, string[]> = {
+  batiment: [
+    'Chute de hauteur',
+    'Chute de plain-pied',
+    'Manutention manuelle',
+    'Effondrement / ensevelissement',
+    'Risque electrique',
+    'Risque chimique (poussieres, amiante)',
+    'Bruit',
+    'Vibrations',
+    'Conditions climatiques',
+    'Circulation engins',
+    'Risques psycho-sociaux',
+  ],
+  restauration: [
+    'Brulures thermiques',
+    'Coupures',
+    'Chute de plain-pied (sol glissant)',
+    'Manutention manuelle',
+    'Risque chimique (produits nettoyage)',
+    'Bruit',
+    'Stress / cadence',
+    'TMS (gestes repetitifs)',
+    'Risques psycho-sociaux',
+  ],
+  bureau: [
+    'TMS (posture ecran)',
+    'Eclairage inadequat',
+    'Risques psycho-sociaux',
+    'Stress',
+    'Risque electrique',
+    'Chute de plain-pied',
+    'Qualite de l\'air interieur',
+    'Isolement / teletravail',
+  ],
+  commerce: [
+    'Manutention manuelle',
+    'Chute de plain-pied',
+    'Agression / violence externe',
+    'TMS (gestes repetitifs)',
+    'Risques psycho-sociaux',
+    'Risque routier',
+    'Eclairage',
+  ],
+  industrie: [
+    'Risque machine',
+    'Risque chimique',
+    'Risque electrique',
+    'Bruit',
+    'Vibrations',
+    'Manutention mecanique',
+    'Manutention manuelle',
+    'Incendie / explosion',
+    'Chute de hauteur',
+    'Chute de plain-pied',
+    'TMS',
+    'Risques psycho-sociaux',
+  ],
+  sante: [
+    'Risque biologique',
+    'TMS (manutention patients)',
+    'Risques psycho-sociaux',
+    'Agression / violence',
+    'Risque chimique (produits)',
+    'Chute de plain-pied',
+    'Travail de nuit',
+    'Rayonnements ionisants',
+  ],
+  transport: [
+    'Risque routier',
+    'Manutention manuelle',
+    'Manutention mecanique',
+    'Chute de hauteur (chargement)',
+    'TMS (conduite prolongee)',
+    'Risques psycho-sociaux',
+    'Bruit',
+    'Vibrations',
+  ],
+  agriculture: [
+    'Risque machine agricole',
+    'Risque chimique (phytosanitaires)',
+    'Manutention manuelle',
+    'Conditions climatiques',
+    'Risque biologique (zoonoses)',
+    'Chute de hauteur',
+    'Bruit',
+    'TMS',
+  ],
+  services: [
+    'TMS (posture ecran)',
+    'Risques psycho-sociaux',
+    'Stress',
+    'Risque routier',
+    'Chute de plain-pied',
+    'Risque electrique',
+  ],
+  autre: [
+    'Chute de plain-pied',
+    'Risque electrique',
+    'Incendie',
+    'Risques psycho-sociaux',
+    'TMS',
+    'Risque routier',
+    'Manutention manuelle',
+    'Bruit',
+  ],
+};
+
+export const SEVERITY_LABELS = {
+  faible: 'Faible',
+  modere: 'Modere',
+  eleve: 'Eleve',
+  critique: 'Critique',
+} as const;
+
+export const PROBABILITY_LABELS = {
+  improbable: 'Improbable',
+  peu_probable: 'Peu probable',
+  probable: 'Probable',
+  tres_probable: 'Tres probable',
+} as const;
+
+export const PRIORITY_LABELS = {
+  faible: 'Faible',
+  moyenne: 'Moyenne',
+  haute: 'Haute',
+  urgente: 'Urgente',
+} as const;
+
+export const ACTION_STATUS_LABELS = {
+  a_faire: 'A faire',
+  en_cours: 'En cours',
+  terminee: 'Terminee',
+  annulee: 'Annulee',
+} as const;
+
+export const DUERP_STATUS_LABELS = {
+  draft: 'Brouillon',
+  in_progress: 'En cours',
+  pending_validation: 'En attente de validation',
+  validated: 'Valide',
+  archived: 'Archive',
+} as const;

@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  web:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.web
+    ports:
+      - "3000:3000"
+    volumes:
+      - ../apps/web:/app/apps/web
+      - ../packages:/app/packages
+      - /app/apps/web/node_modules
+      - /app/apps/web/.next
+    environment:
+      - NEXT_PUBLIC_SUPABASE_URL=${SUPABASE_URL:-http://localhost:54321}
+      - NEXT_PUBLIC_SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+      - NEXT_PUBLIC_API_URL=http://localhost:3001/api/v1
+    depends_on:
+      - api
+
+  api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.api
+    ports:
+      - "3001:3001"
+    volumes:
+      - ../apps/api:/app/apps/api
+      - ../packages:/app/packages
+      - /app/apps/api/node_modules
+    environment:
+      - SUPABASE_URL=${SUPABASE_URL:-http://localhost:54321}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+      - RULES_ENGINE_URL=http://rules-engine:8000
+      - API_PORT=3001
+      - CORS_ORIGINS=http://localhost:3000
+    depends_on:
+      - rules-engine
+
+  rules-engine:
+    build:
+      context: ../services/rules-engine
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ../services/rules-engine/app:/app/app
+    environment:
+      - ENV=development
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
