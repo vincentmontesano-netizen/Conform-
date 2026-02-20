@@ -222,10 +222,10 @@ export function useDuerpWizard() {
       );
 
       const severityToPriority: Record<string, ActionPriority> = {
-        faible: 'faible',
-        modere: 'moyenne',
-        eleve: 'haute',
-        critique: 'urgente',
+        faible: 'faible' as ActionPriority,
+        modere: 'moyenne' as ActionPriority,
+        eleve: 'haute' as ActionPriority,
+        critique: 'urgente' as ActionPriority,
       };
 
       const generatedPlans: WizardActionPlan[] = allRisks.map((risk) => ({

@@ -8,7 +8,7 @@ export class DuerpService {
   async findAll(companyId: string) {
     const client = this.supabaseService.getClient();
     const { data, error } = await client
-      .from('duerps')
+      .from('duerp_documents')
       .select('*, sites(name)')
       .eq('company_id', companyId)
       .order('created_at', { ascending: false });
@@ -20,7 +20,7 @@ export class DuerpService {
   async findOne(id: string) {
     const client = this.supabaseService.getClient();
     const { data, error } = await client
-      .from('duerps')
+      .from('duerp_documents')
       .select('*, work_units(*, risks(*)), action_plans(*)')
       .eq('id', id)
       .single();
@@ -32,7 +32,7 @@ export class DuerpService {
   async create(dto: any, user: any) {
     const client = this.supabaseService.getClient();
     const { data, error } = await client
-      .from('duerps')
+      .from('duerp_documents')
       .insert({
         ...dto,
         company_id: user.company_id,
@@ -49,7 +49,7 @@ export class DuerpService {
   async update(id: string, dto: any) {
     const client = this.supabaseService.getClient();
     const { data, error } = await client
-      .from('duerps')
+      .from('duerp_documents')
       .update(dto)
       .eq('id', id)
       .select()
@@ -62,10 +62,10 @@ export class DuerpService {
   async validate(id: string, user: any) {
     const client = this.supabaseService.getClient();
 
-    // Get current DUERP
+    // Get current DUERP with all related data for snapshot
     const { data: duerp, error: fetchError } = await client
-      .from('duerps')
-      .select('*')
+      .from('duerp_documents')
+      .select('*, work_units(*, risks(*)), action_plans(*)')
       .eq('id', id)
       .single();
 
@@ -83,14 +83,14 @@ export class DuerpService {
       ? versions[0].version_number + 1
       : 1;
 
-    // Create version snapshot
+    // Create version snapshot (content = full JSONB snapshot)
     const { data: version, error: versionError } = await client
       .from('duerp_versions')
       .insert({
         duerp_id: id,
         version_number: nextVersion,
-        snapshot: duerp,
-        validated_by: user.id,
+        content: duerp,
+        created_by: user.id,
       })
       .select()
       .single();
@@ -99,7 +99,7 @@ export class DuerpService {
 
     // Update DUERP status
     await client
-      .from('duerps')
+      .from('duerp_documents')
       .update({ status: 'validated', current_version: nextVersion })
       .eq('id', id);
 
@@ -137,7 +137,6 @@ export class DuerpService {
       .insert({
         ...dto,
         work_unit_id: unitId,
-        duerp_id: duerpId,
       })
       .select()
       .single();

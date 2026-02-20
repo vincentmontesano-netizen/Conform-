@@ -23,7 +23,8 @@ export default function DuerpVersionsPage({
   params: Promise<{ duerpId: string }>;
 }) {
   const { duerpId } = use(params);
-  const { data: versions, isLoading, error } = useDuerpVersions(duerpId);
+  const { data, isLoading, error } = useDuerpVersions(duerpId);
+  const versions = data as DuerpVersion[] | undefined;
 
   return (
     <div className="space-y-6">
@@ -60,7 +61,7 @@ export default function DuerpVersionsPage({
         </div>
       )}
 
-      {!isLoading && !error && versions && (versions as DuerpVersion[]).length === 0 && (
+      {!isLoading && !error && versions && versions.length === 0 && (
         <div className="rounded-lg border bg-card p-12 text-center shadow-sm">
           <History className="mx-auto h-12 w-12 text-muted-foreground/50" />
           <h2 className="mt-4 text-lg font-semibold">Aucune version</h2>
@@ -70,7 +71,7 @@ export default function DuerpVersionsPage({
         </div>
       )}
 
-      {!isLoading && !error && versions && (versions as DuerpVersion[]).length > 0 && (
+      {!isLoading && !error && versions && versions.length > 0 && (
         <div className="rounded-lg border bg-card shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -91,7 +92,7 @@ export default function DuerpVersionsPage({
                 </tr>
               </thead>
               <tbody>
-                {(versions as DuerpVersion[]).map((version) => (
+                {versions.map((version) => (
                   <tr
                     key={version.id}
                     className="border-b transition-colors hover:bg-muted/50 last:border-0"
