@@ -11,36 +11,106 @@ import {
   FileText,
   Clock,
   ArrowRight,
+  TrendingUp,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-function ScoreRing({ score }: { score: number }) {
+function ScoreGauge({ score }: { score: number }) {
+  const radius = 40;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference - (score / 100) * circumference;
   const color =
+    score >= 80 ? 'hsl(var(--success))' : score >= 50 ? 'hsl(var(--warning))' : 'hsl(var(--destructive))';
+  const label =
     score >= 80
-      ? 'border-green-500 text-green-600'
+      ? 'Bon niveau'
       : score >= 50
-        ? 'border-yellow-500 text-yellow-600'
-        : 'border-red-500 text-red-600';
+        ? 'A ameliorer'
+        : 'Insuffisant';
 
   return (
-    <div
-      className={cn(
-        'flex h-20 w-20 items-center justify-center rounded-full border-4',
-        color,
-      )}
-    >
-      <span className="text-2xl font-bold">{score}</span>
+    <div className="flex items-center gap-6">
+      <div className="relative h-24 w-24 shrink-0">
+        <svg viewBox="0 0 100 100" className="h-full w-full -rotate-90">
+          <circle
+            cx="50"
+            cy="50"
+            r={radius}
+            fill="none"
+            stroke="hsl(var(--border))"
+            strokeWidth="6"
+          />
+          <circle
+            cx="50"
+            cy="50"
+            r={radius}
+            fill="none"
+            stroke={color}
+            strokeWidth="6"
+            strokeLinecap="round"
+            strokeDasharray={circumference}
+            strokeDashoffset={offset}
+            style={{
+              animation: 'score-fill 1.2s ease-out forwards',
+              strokeDashoffset: offset,
+            }}
+          />
+        </svg>
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <span className="text-2xl font-bold text-foreground">{score}</span>
+          <span className="text-[10px] font-medium text-muted-foreground">/100</span>
+        </div>
+      </div>
+      <div>
+        <p className="text-sm font-semibold text-foreground">{label}</p>
+        <p className="mt-0.5 text-xs text-muted-foreground">Score de conformite</p>
+      </div>
     </div>
   );
 }
 
+const kpiConfig = [
+  {
+    key: 'sites',
+    label: 'Sites',
+    icon: Building2,
+    getValue: (d: { sites_count: number }) => d.sites_count,
+    accent: false,
+  },
+  {
+    key: 'duerps',
+    label: 'DUERP',
+    icon: FileText,
+    getValue: (d: { duerps_count: number }) => d.duerps_count,
+    sub: (d: { duerps_validated: number }) => `${d.duerps_validated} valide(s)`,
+    accent: false,
+  },
+  {
+    key: 'actions',
+    label: 'Actions en attente',
+    icon: ClipboardList,
+    getValue: (d: { action_plans_pending: number }) => d.action_plans_pending,
+    accent: false,
+  },
+  {
+    key: 'overdue',
+    label: 'En retard',
+    icon: Clock,
+    getValue: (d: { action_plans_overdue: number }) => d.action_plans_overdue,
+    accent: true,
+  },
+] as const;
+
 export default function DashboardPage() {
-  const { data, isLoading, error } = useDashboard();
+  const { data: overview, isLoading, error } = useDashboard();
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-24">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      <div className="flex items-center justify-center py-32">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="h-6 w-6 animate-spin text-accent" />
+          <span className="text-xs text-muted-foreground">Chargement...</span>
+        </div>
       </div>
     );
   }
@@ -48,8 +118,8 @@ export default function DashboardPage() {
   if (error) {
     return (
       <div className="space-y-6">
-        <h1 className="text-2xl font-bold">Tableau de bord</h1>
-        <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4">
+        <h1 className="font-display text-3xl italic text-foreground">Tableau de bord</h1>
+        <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-5">
           <p className="text-sm text-destructive">
             Erreur lors du chargement : {(error as Error).message}
           </p>
@@ -58,135 +128,139 @@ export default function DashboardPage() {
     );
   }
 
-  const overview = data;
-
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Tableau de bord</h1>
-
-      {/* KPI Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-lg border bg-card p-6 shadow-sm">
-          <div className="flex items-center gap-3">
-            <Building2 className="h-5 w-5 text-muted-foreground" />
-            <h2 className="text-sm font-medium text-muted-foreground">Sites</h2>
-          </div>
-          <p className="mt-3 text-3xl font-bold">{overview?.sites_count ?? 0}</p>
+    <div className="space-y-8">
+      {/* Header */}
+      <div className="flex items-end justify-between">
+        <div>
+          <h1 className="font-display text-3xl italic text-foreground">Tableau de bord</h1>
+          <p className="mt-1 text-sm text-muted-foreground">Vue d&apos;ensemble de votre conformite</p>
         </div>
-
-        <div className="rounded-lg border bg-card p-6 shadow-sm">
-          <div className="flex items-center gap-3">
-            <FileText className="h-5 w-5 text-muted-foreground" />
-            <h2 className="text-sm font-medium text-muted-foreground">DUERP</h2>
-          </div>
-          <p className="mt-3 text-3xl font-bold">{overview?.duerps_count ?? 0}</p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            {overview?.duerps_validated ?? 0} valide(s)
-          </p>
-        </div>
-
-        <div className="rounded-lg border bg-card p-6 shadow-sm">
-          <div className="flex items-center gap-3">
-            <ClipboardList className="h-5 w-5 text-muted-foreground" />
-            <h2 className="text-sm font-medium text-muted-foreground">Actions</h2>
-          </div>
-          <p className="mt-3 text-3xl font-bold">
-            {overview?.action_plans_pending ?? 0}
-          </p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            en attente
-          </p>
-        </div>
-
-        <div className="rounded-lg border bg-card p-6 shadow-sm">
-          <div className="flex items-center gap-3">
-            <Clock className="h-5 w-5 text-orange-500" />
-            <h2 className="text-sm font-medium text-muted-foreground">En retard</h2>
-          </div>
-          <p className={cn(
-            'mt-3 text-3xl font-bold',
-            (overview?.action_plans_overdue ?? 0) > 0 && 'text-red-600',
-          )}>
-            {overview?.action_plans_overdue ?? 0}
-          </p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            action(s) en retard
-          </p>
-        </div>
+        <Link
+          href="/duerp/new"
+          className="btn-accent text-xs"
+        >
+          <FileText className="h-3.5 w-3.5" />
+          Nouveau DUERP
+        </Link>
       </div>
 
-      {/* Score + Alerts */}
-      <div className="grid gap-6 md:grid-cols-2">
-        {/* Score de conformite */}
-        <div className="rounded-lg border bg-card p-6 shadow-sm">
-          <h2 className="text-sm font-medium text-muted-foreground">
-            Score de conformite
-          </h2>
-          <div className="mt-4 flex items-center gap-4">
-            {overview ? (
-              <>
-                <ScoreRing score={overview.compliance_score} />
-                <div>
-                  <p className="text-sm font-medium">
-                    {overview.compliance_score >= 80
-                      ? 'Bon niveau de conformite'
-                      : overview.compliance_score >= 50
-                        ? 'Ameliorations necessaires'
-                        : 'Conformite insuffisante'}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Base sur {overview.unresolved_alerts} alerte(s) non resolue(s)
-                  </p>
-                </div>
-              </>
-            ) : (
-              <>
-                <div className="flex h-20 w-20 items-center justify-center rounded-full border-4 border-muted">
-                  <span className="text-2xl font-bold text-muted-foreground">--</span>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Creez votre premier DUERP pour obtenir votre score.
+      {/* KPI Cards */}
+      <div className="stagger-in grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        {kpiConfig.map((kpi) => {
+          const value = overview ? kpi.getValue(overview as never) : 0;
+          const isWarning = kpi.accent && value > 0;
+          return (
+            <div
+              key={kpi.key}
+              className={cn(
+                'card-accent rounded-lg border bg-card p-5 shadow-sm transition-shadow hover:shadow-md',
+                isWarning && 'border-destructive/20',
+              )}
+            >
+              <div className="flex items-center gap-2.5">
+                <kpi.icon
+                  className={cn(
+                    'h-4 w-4',
+                    isWarning ? 'text-destructive' : 'text-muted-foreground/60',
+                  )}
+                />
+                <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  {kpi.label}
+                </span>
+              </div>
+              <p
+                className={cn(
+                  'mt-3 text-3xl font-bold tracking-tight',
+                  isWarning && 'text-destructive',
+                )}
+              >
+                {value}
+              </p>
+              {'sub' in kpi && kpi.sub && overview && (
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {kpi.sub(overview as never)}
                 </p>
-              </>
-            )}
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Score + Alerts row */}
+      <div className="grid gap-6 lg:grid-cols-5">
+        {/* Compliance Score */}
+        <div className="card-accent rounded-lg border bg-card p-6 shadow-sm lg:col-span-2">
+          <div className="flex items-center gap-2 mb-5">
+            <TrendingUp className="h-4 w-4 text-muted-foreground/60" />
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Conformite
+            </h2>
           </div>
+
+          {overview ? (
+            <>
+              <ScoreGauge score={overview.compliance_score} />
+              <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
+                Base sur {overview.unresolved_alerts} alerte(s) non resolue(s)
+              </p>
+            </>
+          ) : (
+            <div className="flex items-center gap-4">
+              <div className="flex h-24 w-24 items-center justify-center rounded-full border-4 border-dashed border-border">
+                <span className="text-lg font-bold text-muted-foreground">--</span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Creez votre premier DUERP pour obtenir votre score.
+              </p>
+            </div>
+          )}
         </div>
 
-        {/* Alertes critiques */}
-        <div className="rounded-lg border bg-card p-6 shadow-sm">
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-medium text-muted-foreground">
-              Alertes non resolues
-            </h2>
+        {/* Alerts Panel */}
+        <div className="card-accent rounded-lg border bg-card p-6 shadow-sm lg:col-span-3">
+          <div className="flex items-center justify-between mb-5">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4 text-muted-foreground/60" />
+              <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Alertes non resolues
+              </h2>
+            </div>
             <Link
               href="/alerts"
-              className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+              className="inline-flex items-center gap-1 text-xs font-medium text-accent hover:text-accent/80 transition-colors"
             >
               Voir tout <ArrowRight className="h-3 w-3" />
             </Link>
           </div>
-          <div className="mt-4">
-            {(overview?.unresolved_alerts ?? 0) === 0 ? (
-              <div className="flex items-center gap-3">
-                <ShieldCheck className="h-8 w-8 text-green-500" />
-                <p className="text-sm text-muted-foreground">
-                  Aucune alerte pour le moment. Tout est en ordre.
+
+          {(overview?.unresolved_alerts ?? 0) === 0 ? (
+            <div className="flex items-center gap-4 py-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[hsl(var(--success)/0.1)]">
+                <ShieldCheck className="h-5 w-5 text-success" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-foreground">Tout est en ordre</p>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  Aucune alerte de conformite pour le moment.
                 </p>
               </div>
-            ) : (
-              <div className="flex items-center gap-3">
-                <AlertTriangle className="h-8 w-8 text-orange-500" />
-                <div>
-                  <p className="text-2xl font-bold text-orange-600">
-                    {overview?.unresolved_alerts}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    alerte(s) a traiter
-                  </p>
-                </div>
+            </div>
+          ) : (
+            <div className="flex items-center gap-4 py-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[hsl(var(--warning)/0.12)]">
+                <AlertTriangle className="h-5 w-5 text-warning" />
               </div>
-            )}
-          </div>
+              <div>
+                <p className="text-3xl font-bold tracking-tight text-foreground">
+                  {overview?.unresolved_alerts}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  alerte(s) a traiter en priorite
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

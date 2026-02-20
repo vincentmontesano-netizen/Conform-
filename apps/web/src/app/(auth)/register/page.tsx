@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
+import { Loader2 } from 'lucide-react';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -42,24 +43,32 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="rounded-lg border bg-card p-8 shadow-sm">
-      <div className="mb-6 text-center">
-        <h1 className="text-2xl font-bold text-primary">CONFORM+</h1>
+    <div className="animate-fade-in-up">
+      {/* Mobile-only logo */}
+      <div className="mb-10 lg:hidden">
+        <div className="flex items-baseline gap-1">
+          <span className="font-display text-2xl italic text-primary">Conform</span>
+          <span className="text-accent text-xl font-bold">+</span>
+        </div>
+      </div>
+
+      <div className="mb-8">
+        <h1 className="font-display text-3xl italic text-foreground">Creer un compte</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Creez votre compte
+          Rejoignez la plateforme de conformite
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-5">
         {error && (
-          <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+          <div className="rounded-md border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
             {error}
           </div>
         )}
 
         <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label htmlFor="firstName" className="block text-sm font-medium">
+          <div className="space-y-1.5">
+            <label htmlFor="firstName" className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Prenom
             </label>
             <input
@@ -68,11 +77,11 @@ export default function RegisterPage() {
               value={firstName}
               onChange={(e) => setFirstName(e.target.value)}
               required
-              className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              className="input-cabinet"
             />
           </div>
-          <div>
-            <label htmlFor="lastName" className="block text-sm font-medium">
+          <div className="space-y-1.5">
+            <label htmlFor="lastName" className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Nom
             </label>
             <input
@@ -81,14 +90,14 @@ export default function RegisterPage() {
               value={lastName}
               onChange={(e) => setLastName(e.target.value)}
               required
-              className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              className="input-cabinet"
             />
           </div>
         </div>
 
-        <div>
-          <label htmlFor="email" className="block text-sm font-medium">
-            Email
+        <div className="space-y-1.5">
+          <label htmlFor="email" className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Adresse email
           </label>
           <input
             id="email"
@@ -96,12 +105,12 @@ export default function RegisterPage() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            className="input-cabinet"
           />
         </div>
 
-        <div>
-          <label htmlFor="password" className="block text-sm font-medium">
+        <div className="space-y-1.5">
+          <label htmlFor="password" className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Mot de passe
           </label>
           <input
@@ -111,7 +120,7 @@ export default function RegisterPage() {
             onChange={(e) => setPassword(e.target.value)}
             required
             minLength={8}
-            className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            className="input-cabinet"
             placeholder="Minimum 8 caracteres"
           />
         </div>
@@ -119,15 +128,28 @@ export default function RegisterPage() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+          className="btn-primary w-full"
         >
-          {loading ? 'Creation...' : 'Creer mon compte'}
+          {loading ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Creation...
+            </>
+          ) : (
+            'Creer mon compte'
+          )}
         </button>
       </form>
 
-      <p className="mt-4 text-center text-sm text-muted-foreground">
+      <div className="mt-8 flex items-center gap-3">
+        <div className="h-px flex-1 bg-border" />
+        <span className="text-xs text-muted-foreground">ou</span>
+        <div className="h-px flex-1 bg-border" />
+      </div>
+
+      <p className="mt-6 text-center text-sm text-muted-foreground">
         Deja un compte ?{' '}
-        <Link href="/login" className="text-primary hover:underline">
+        <Link href="/login" className="font-semibold text-accent hover:text-accent/80 transition-colors">
           Se connecter
         </Link>
       </p>

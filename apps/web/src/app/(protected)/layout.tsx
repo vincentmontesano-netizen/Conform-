@@ -6,9 +6,13 @@ export default function ProtectedLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex h-screen">
+    <div className="flex h-screen bg-background">
       <Sidebar />
-      <main className="flex-1 overflow-auto bg-muted/30 p-8">{children}</main>
+      <main className="relative flex-1 overflow-auto">
+        {/* Grain texture on main area */}
+        <div className="grain pointer-events-none absolute inset-0 opacity-30" />
+        <div className="relative z-10 p-8 lg:p-10">{children}</div>
+      </main>
     </div>
   );
 }
