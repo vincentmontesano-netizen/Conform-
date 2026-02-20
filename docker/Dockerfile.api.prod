@@ -1,0 +1,46 @@
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+# Copy workspace config
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml* turbo.json ./
+COPY apps/api/package.json apps/api/
+COPY packages/shared/package.json packages/shared/
+COPY packages/database/package.json packages/database/
+
+RUN pnpm install --frozen-lockfile || pnpm install
+
+# Copy source
+COPY packages/ packages/
+COPY apps/api/ apps/api/
+
+# Build
+WORKDIR /app/apps/api
+RUN pnpm build
+
+# --- Production stage ---
+FROM node:20-alpine
+
+WORKDIR /app
+
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+COPY --from=builder /app/package.json /app/pnpm-workspace.yaml /app/pnpm-lock.yaml* /app/turbo.json ./
+COPY --from=builder /app/apps/api/package.json apps/api/
+COPY --from=builder /app/packages/shared/package.json packages/shared/
+COPY --from=builder /app/packages/database/package.json packages/database/
+
+RUN pnpm install --frozen-lockfile --prod || pnpm install --prod
+
+COPY --from=builder /app/apps/api/dist apps/api/dist
+COPY --from=builder /app/packages/ packages/
+
+WORKDIR /app/apps/api
+
+ENV NODE_ENV=production
+
+EXPOSE 3001
+
+CMD ["node", "dist/main.js"]
