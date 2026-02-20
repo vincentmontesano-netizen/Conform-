@@ -1,7 +1,6 @@
 'use client';
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { api } from '@/lib/api';
+import { useAlerts, useResolveAlert } from '@/hooks/useDashboard';
 import type { ComplianceAlert } from '@conform-plus/shared';
 import { Bell, Loader2, CheckCircle2, AlertTriangle, Info, AlertOctagon } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -34,25 +33,9 @@ function formatDate(dateString: string): string {
   });
 }
 
-function useAlerts() {
-  return useQuery({
-    queryKey: ['alerts'],
-    queryFn: () => api.get<ComplianceAlert[]>('/alerts'),
-  });
-}
-
-function useResolveAlert() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (alertId: string) => api.patch(`/alerts/${alertId}/resolve`, {}),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['alerts'] });
-    },
-  });
-}
-
 export default function AlertsPage() {
-  const { data: alerts, isLoading, error } = useAlerts();
+  const { data, isLoading, error } = useAlerts();
+  const alerts = data as ComplianceAlert[] | undefined;
   const resolveAlert = useResolveAlert();
 
   return (
@@ -73,7 +56,7 @@ export default function AlertsPage() {
       {error && (
         <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4">
           <p className="text-sm text-destructive">
-            Erreur lors du chargement des alertes : {error.message}
+            Erreur lors du chargement des alertes : {(error as Error).message}
           </p>
         </div>
       )}

@@ -1,8 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { api } from '@/lib/api';
+import { useAuditLogs } from '@/hooks/useDashboard';
 import type { AuditLog } from '@conform-plus/shared';
 import { Loader2, ScrollText, ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -48,34 +47,12 @@ function formatEntityType(type: string): string {
   return typeLabels[type] ?? type;
 }
 
-interface PaginatedResponse {
-  data: AuditLog[];
-  total: number;
-  page: number;
-  pageSize: number;
-}
-
-function useAuditLogs(page: number) {
-  return useQuery({
-    queryKey: ['audit-logs', page],
-    queryFn: () =>
-      api.get<PaginatedResponse | AuditLog[]>(
-        `/audit-logs?page=${page}&pageSize=${PAGE_SIZE}`
-      ),
-  });
-}
-
 export default function AuditLogPage() {
   const [page, setPage] = useState(1);
-  const { data: response, isLoading, error } = useAuditLogs(page);
+  const { data: response, isLoading, error } = useAuditLogs(page, PAGE_SIZE);
 
-  // Handle both paginated and non-paginated responses
-  const logs: AuditLog[] = Array.isArray(response)
-    ? response
-    : (response as PaginatedResponse)?.data ?? [];
-  const total = Array.isArray(response)
-    ? response.length
-    : (response as PaginatedResponse)?.total ?? 0;
+  const logs: AuditLog[] = response?.data ?? [];
+  const total = response?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   return (

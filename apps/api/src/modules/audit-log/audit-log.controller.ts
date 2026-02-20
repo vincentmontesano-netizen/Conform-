@@ -20,8 +20,14 @@ export class AuditLogController {
   findAll(
     @CurrentUser() user: any,
     @Query('entity_type') entityType?: string,
-    @Query('limit') limit?: number,
+    @Query('page') page?: string,
+    @Query('pageSize') pageSize?: string,
   ) {
-    return this.auditLogService.findAll(user.company_id, entityType, limit);
+    return this.auditLogService.findAll(
+      user.company_id,
+      entityType,
+      page ? parseInt(page, 10) : undefined,
+      pageSize ? parseInt(pageSize, 10) : undefined,
+    );
   }
 }
