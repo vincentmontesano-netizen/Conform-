@@ -28,6 +28,7 @@
   },
   "devDependencies": {
     "@conform-plus/shared": "workspace:*",
+    "@playwright/test": "^1.58.2",
     "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
