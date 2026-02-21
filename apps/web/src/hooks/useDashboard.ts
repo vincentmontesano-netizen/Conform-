@@ -14,6 +14,16 @@ export interface DashboardOverview {
   unresolved_alerts: number;
   action_plans_pending: number;
   action_plans_overdue: number;
+  duerps_overdue: number;
+  unresolved_triggers: number;
+  registres_count: number;
+  registre_entries_expiring: number;
+  epi_count: number;
+  epi_expiring: number;
+  epi_non_conforme: number;
+  formations_expiring: number;
+  habilitations_expiring: number;
+  formation_types_count: number;
 }
 
 export function useDashboard() {

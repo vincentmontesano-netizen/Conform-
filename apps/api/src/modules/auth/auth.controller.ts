@@ -12,4 +12,16 @@ export class AuthController {
   getMe(@CurrentUser() user: any) {
     return user;
   }
+
+  @Get('profile')
+  @UseGuards(SupabaseAuthGuard)
+  getProfile(@CurrentUser() user: any) {
+    const fullName = [user.first_name, user.last_name].filter(Boolean).join(' ') || null;
+    return {
+      id: user.id,
+      email: user.email,
+      full_name: fullName,
+      role: user.role || null,
+    };
+  }
 }

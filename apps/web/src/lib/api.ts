@@ -63,6 +63,16 @@ export const api = {
     return handleResponse<T>(response);
   },
 
+  async put<T>(path: string, body?: unknown): Promise<T> {
+    const headers = await getAuthHeaders();
+    const response = await fetch(`${API_URL}${path}`, {
+      method: 'PUT',
+      headers,
+      body: body ? JSON.stringify(body) : undefined,
+    });
+    return handleResponse<T>(response);
+  },
+
   async delete<T>(path: string): Promise<T> {
     const headers = await getAuthHeaders();
     const response = await fetch(`${API_URL}${path}`, {

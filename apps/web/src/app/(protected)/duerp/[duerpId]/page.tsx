@@ -15,6 +15,10 @@ import {
   ShieldAlert,
   ClipboardList,
   Building2,
+  Zap,
+  CalendarClock,
+  AlertTriangle,
+  Shield,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -120,6 +124,36 @@ export default function DuerpDetailPage({
             </Link>
           )}
           <Link
+            href={`/duerp/${duerpId}/actions`}
+            className={cn(
+              'inline-flex items-center gap-2 rounded-md border border-input bg-background px-4 py-2 text-sm font-medium',
+              'hover:bg-accent hover:text-accent-foreground transition-colors'
+            )}
+          >
+            <ClipboardList className="h-4 w-4" />
+            Actions
+          </Link>
+          <Link
+            href={`/duerp/${duerpId}/papripact`}
+            className={cn(
+              'inline-flex items-center gap-2 rounded-md border border-input bg-background px-4 py-2 text-sm font-medium',
+              'hover:bg-accent hover:text-accent-foreground transition-colors'
+            )}
+          >
+            <FileText className="h-4 w-4" />
+            PAPRIPACT
+          </Link>
+          <Link
+            href={`/duerp/${duerpId}/inspection`}
+            className={cn(
+              'inline-flex items-center gap-2 rounded-md border border-input bg-background px-4 py-2 text-sm font-medium',
+              'hover:bg-accent hover:text-accent-foreground transition-colors'
+            )}
+          >
+            <Shield className="h-4 w-4" />
+            Inspection
+          </Link>
+          <Link
             href={`/duerp/${duerpId}/versions`}
             className={cn(
               'inline-flex items-center gap-2 rounded-md border border-input bg-background px-4 py-2 text-sm font-medium',
@@ -127,7 +161,7 @@ export default function DuerpDetailPage({
             )}
           >
             <History className="h-4 w-4" />
-            Historique des versions
+            Versions
           </Link>
         </div>
       </div>
@@ -164,8 +198,45 @@ export default function DuerpDetailPage({
         )}
       </div>
 
+      {/* Next update date */}
+      {(duerp as any).next_update_due && (
+        <div className={cn(
+          'flex items-center gap-3 rounded-lg border p-4',
+          new Date((duerp as any).next_update_due) < new Date()
+            ? 'border-red-300 bg-red-50'
+            : 'border-green-300 bg-green-50'
+        )}>
+          <CalendarClock className={cn(
+            'h-5 w-5',
+            new Date((duerp as any).next_update_due) < new Date()
+              ? 'text-red-600'
+              : 'text-green-600'
+          )} />
+          <div>
+            <p className={cn(
+              'text-sm font-semibold',
+              new Date((duerp as any).next_update_due) < new Date()
+                ? 'text-red-800'
+                : 'text-green-800'
+            )}>
+              {new Date((duerp as any).next_update_due) < new Date()
+                ? 'DUERP en retard de mise a jour !'
+                : 'Prochaine mise a jour obligatoire'}
+            </p>
+            <p className={cn(
+              'text-xs',
+              new Date((duerp as any).next_update_due) < new Date()
+                ? 'text-red-700'
+                : 'text-green-700'
+            )}>
+              Echeance : {formatDate((duerp as any).next_update_due)}
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Summary Cards */}
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-4">
         <div className="rounded-lg border bg-card p-6 shadow-sm">
           <div className="flex items-center gap-3">
             <div className="rounded-lg bg-blue-100 p-2">
@@ -184,7 +255,11 @@ export default function DuerpDetailPage({
               <ShieldAlert className="h-5 w-5 text-orange-600" />
             </div>
             <div>
-              <p className="text-2xl font-bold">--</p>
+              <p className="text-2xl font-bold">
+                {(duerp as any).work_units
+                  ? (duerp as any).work_units.reduce((sum: number, wu: any) => sum + (wu.risks?.length || 0), 0)
+                  : 0}
+              </p>
               <p className="text-xs text-muted-foreground">Risques identifies</p>
             </div>
           </div>
@@ -196,12 +271,52 @@ export default function DuerpDetailPage({
               <ClipboardList className="h-5 w-5 text-green-600" />
             </div>
             <div>
-              <p className="text-2xl font-bold">--</p>
+              <p className="text-2xl font-bold">
+                {(duerp as any).action_plans?.length || 0}
+              </p>
               <p className="text-xs text-muted-foreground">Actions de prevention</p>
             </div>
           </div>
         </div>
+
+        <div className="rounded-lg border bg-card p-6 shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="rounded-lg bg-purple-100 p-2">
+              <Zap className="h-5 w-5 text-purple-600" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold">
+                {(duerp as any).work_units?.length || 0}
+              </p>
+              <p className="text-xs text-muted-foreground">Unites de travail</p>
+            </div>
+          </div>
+        </div>
       </div>
+
+      {/* Work Units summary */}
+      {(duerp as any).work_units && (duerp as any).work_units.length > 0 && (
+        <div className="rounded-lg border bg-card p-6 shadow-sm">
+          <h2 className="flex items-center gap-2 text-sm font-semibold text-muted-foreground mb-4">
+            <ShieldAlert className="h-4 w-4" />
+            Unites de travail et risques
+          </h2>
+          <div className="space-y-3">
+            {(duerp as any).work_units.map((wu: any, idx: number) => (
+              <div key={wu.id} className="rounded-md border p-3">
+                <p className="text-sm font-medium">
+                  <span className="text-muted-foreground">UT{idx + 1} :</span> {wu.name}
+                </p>
+                {wu.risks && wu.risks.length > 0 && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {wu.risks.length} risque(s) identifie(s)
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Back link */}
       <div>

@@ -6,6 +6,8 @@ export class DuerpService {
   constructor(private readonly supabaseService: SupabaseService) {}
 
   async findAll(companyId: string) {
+    if (!companyId) return [];
+
     const client = this.supabaseService.getClient();
     const { data, error } = await client
       .from('duerp_documents')
@@ -59,6 +61,19 @@ export class DuerpService {
     return data;
   }
 
+  async saveDraft(id: string, draftContent: any) {
+    const client = this.supabaseService.getClient();
+    const { data, error } = await client
+      .from('duerp_documents')
+      .update({ draft_content: draftContent })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
+
   async validate(id: string, user: any) {
     const client = this.supabaseService.getClient();
 
@@ -97,10 +112,14 @@ export class DuerpService {
 
     if (versionError) throw versionError;
 
-    // Update DUERP status
+    // Update DUERP status + clear draft
     await client
       .from('duerp_documents')
-      .update({ status: 'validated', current_version: nextVersion })
+      .update({
+        status: 'validated',
+        current_version: nextVersion,
+        draft_content: null,
+      })
       .eq('id', id);
 
     return version;
@@ -157,13 +176,66 @@ export class DuerpService {
     return data;
   }
 
-  async updateActionPlan(duerpId: string, planId: string, dto: any) {
+  async updateActionPlan(duerpId: string, planId: string, dto: any, user?: any) {
     const client = this.supabaseService.getClient();
+
+    // Get current state for logging
+    let previousStatus: string | null = null;
+    if (dto.status && user) {
+      const { data: current } = await client
+        .from('action_plans')
+        .select('status')
+        .eq('id', planId)
+        .single();
+      previousStatus = current?.status || null;
+    }
+
     const { data, error } = await client
       .from('action_plans')
       .update(dto)
       .eq('id', planId)
       .eq('duerp_id', duerpId)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    // Auto-log status change
+    if (dto.status && previousStatus && dto.status !== previousStatus && user) {
+      await client.from('action_plan_logs').insert({
+        action_plan_id: planId,
+        event_type: 'status_change',
+        previous_value: { status: previousStatus },
+        new_value: { status: dto.status },
+        created_by: user.id,
+      });
+    }
+
+    return data;
+  }
+
+  async getActionPlanLogs(duerpId: string, planId: string) {
+    const client = this.supabaseService.getClient();
+    const { data, error } = await client
+      .from('action_plan_logs')
+      .select('*')
+      .eq('action_plan_id', planId)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data;
+  }
+
+  async addActionPlanLog(duerpId: string, planId: string, comment: string, user: any) {
+    const client = this.supabaseService.getClient();
+    const { data, error } = await client
+      .from('action_plan_logs')
+      .insert({
+        action_plan_id: planId,
+        event_type: 'comment',
+        comment,
+        created_by: user.id,
+      })
       .select()
       .single();
 

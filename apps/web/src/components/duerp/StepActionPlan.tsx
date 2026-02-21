@@ -4,6 +4,7 @@ import { useState } from 'react';
 import {
   PRIORITY_LABELS,
   ACTION_STATUS_LABELS,
+  ACTION_CATEGORY_LABELS,
 } from '@conform-plus/shared';
 import type { ActionPriority, ActionStatus } from '@conform-plus/shared';
 import type { ComplianceEvaluationResult } from '@conform-plus/shared';
@@ -295,9 +296,9 @@ export function StepActionPlan({ wizard }: StepActionPlanProps) {
                             </div>
                           </div>
 
-                          {/* Expanded Description + Proof */}
+                          {/* Expanded Description + PAPRIPACT fields + Proof */}
                           {isExpanded && (
-                            <div className="border-t bg-muted/20 px-4 py-3 space-y-3">
+                            <div className="border-t bg-muted/20 px-4 py-3 space-y-4">
                               <div className="space-y-1">
                                 <label className="text-xs font-medium text-muted-foreground">
                                   Description
@@ -319,6 +320,104 @@ export function StepActionPlan({ wizard }: StepActionPlanProps) {
                                 />
                               </div>
 
+                              {/* PAPRIPACT Fields */}
+                              <div className="rounded-md border bg-background p-3 space-y-3">
+                                <h5 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                                  PAPRIPACT
+                                </h5>
+                                <div className="grid gap-3 sm:grid-cols-2">
+                                  {/* Category */}
+                                  <div className="space-y-1">
+                                    <label className="text-xs font-medium text-muted-foreground">
+                                      Categorie
+                                    </label>
+                                    <select
+                                      value={plan.category || 'prevention'}
+                                      onChange={(e) =>
+                                        wizard.updateActionPlan(plan.id, {
+                                          category: e.target.value,
+                                        })
+                                      }
+                                      className={cn(
+                                        'flex h-8 w-full rounded-md border border-input bg-background px-2 py-1 text-sm',
+                                        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
+                                      )}
+                                    >
+                                      {Object.entries(ACTION_CATEGORY_LABELS).map(([value, label]) => (
+                                        <option key={value} value={value}>
+                                          {label}
+                                        </option>
+                                      ))}
+                                    </select>
+                                  </div>
+
+                                  {/* Budget */}
+                                  <div className="space-y-1">
+                                    <label className="text-xs font-medium text-muted-foreground">
+                                      Budget estime (EUR)
+                                    </label>
+                                    <input
+                                      type="text"
+                                      value={plan.budget_estimate || ''}
+                                      onChange={(e) =>
+                                        wizard.updateActionPlan(plan.id, {
+                                          budget_estimate: e.target.value,
+                                        })
+                                      }
+                                      placeholder="Ex: 500"
+                                      className={cn(
+                                        'flex h-8 w-full rounded-md border border-input bg-background px-2 py-1 text-sm',
+                                        'placeholder:text-muted-foreground',
+                                        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
+                                      )}
+                                    />
+                                  </div>
+
+                                  {/* Resources */}
+                                  <div className="space-y-1">
+                                    <label className="text-xs font-medium text-muted-foreground">
+                                      Ressources necessaires
+                                    </label>
+                                    <input
+                                      type="text"
+                                      value={plan.resources || ''}
+                                      onChange={(e) =>
+                                        wizard.updateActionPlan(plan.id, {
+                                          resources: e.target.value,
+                                        })
+                                      }
+                                      placeholder="Ex: Formation, EPI, intervenant externe..."
+                                      className={cn(
+                                        'flex h-8 w-full rounded-md border border-input bg-background px-2 py-1 text-sm',
+                                        'placeholder:text-muted-foreground',
+                                        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
+                                      )}
+                                    />
+                                  </div>
+
+                                  {/* Completion percentage */}
+                                  <div className="space-y-1">
+                                    <label className="text-xs font-medium text-muted-foreground">
+                                      Avancement : {plan.completion_percentage || 0}%
+                                    </label>
+                                    <input
+                                      type="range"
+                                      min={0}
+                                      max={100}
+                                      step={5}
+                                      value={plan.completion_percentage || 0}
+                                      onChange={(e) =>
+                                        wizard.updateActionPlan(plan.id, {
+                                          completion_percentage: parseInt(e.target.value, 10),
+                                        })
+                                      }
+                                      className="w-full accent-primary"
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Proof Section */}
                               {plan.is_critical && (
                                 <div className="space-y-2">
                                   <div className="flex items-center gap-2">
@@ -343,7 +442,7 @@ export function StepActionPlan({ wizard }: StepActionPlanProps) {
                                   <div className="rounded-md border border-dashed bg-background p-4 text-center">
                                     <Upload className="mx-auto h-6 w-6 text-muted-foreground/50" />
                                     <p className="mt-1 text-xs text-muted-foreground">
-                                      Fonctionnalite d'upload de preuve a venir
+                                      L&apos;upload de preuve sera disponible apres la creation du DUERP.
                                     </p>
                                   </div>
                                 </div>

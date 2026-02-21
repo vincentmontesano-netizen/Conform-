@@ -154,3 +154,20 @@ export const DUERP_STATUS_LABELS = {
   validated: 'Valide',
   archived: 'Archive',
 } as const;
+
+export const TRIGGER_TYPE_LABELS = {
+  changement_organisation: 'Changement d\'organisation',
+  accident_travail: 'Accident du travail',
+  evolution_poste: 'Evolution de poste',
+  nouvelle_reglementation: 'Nouvelle reglementation',
+  mise_a_jour_annuelle: 'Mise a jour annuelle',
+  autre: 'Autre',
+} as const;
+
+export const ACTION_CATEGORY_LABELS = {
+  prevention: 'Prevention',
+  protection: 'Protection',
+  formation: 'Formation',
+  information: 'Information',
+  organisation: 'Organisation',
+} as const;

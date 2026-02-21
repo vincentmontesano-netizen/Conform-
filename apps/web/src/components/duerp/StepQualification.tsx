@@ -2,9 +2,10 @@
 
 import { useCompanies, useCompany, useSites } from '@/hooks/useCompany';
 import { SECTORS } from '@conform-plus/shared';
-import { Building2, MapPin, Users, Loader2, AlertCircle } from 'lucide-react';
+import { Building2, MapPin, Users, Loader2, AlertCircle, Info } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
+import { WizardTooltip } from '@/components/duerp/WizardTooltip';
 import type { useDuerpWizard } from '@/hooks/useDuerpWizard';
 
 interface StepQualificationProps {
@@ -59,11 +60,27 @@ export function StepQualification({ wizard }: StepQualificationProps) {
         </p>
       </div>
 
+      {/* DUERP obligatoire banner */}
+      <div className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50/50 p-3">
+        <Info className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+        <p className="text-xs text-amber-800">
+          <span className="font-semibold">Art. R4121-1 :</span> Le Document Unique est obligatoire
+          pour tout employeur, meme sans salarie. Les categories de risques seront automatiquement
+          adaptees au secteur d&apos;activite selectionne.
+        </p>
+      </div>
+
       {/* Company Select */}
       <div className="space-y-2">
-        <label htmlFor="company-select" className="text-sm font-medium">
-          Entreprise <span className="text-destructive">*</span>
-        </label>
+        <div className="flex items-center gap-2">
+          <label htmlFor="company-select" className="text-sm font-medium">
+            Entreprise <span className="text-destructive">*</span>
+          </label>
+          <WizardTooltip
+            title="Choix de l'entreprise"
+            content="Selectionnez l'entreprise pour laquelle vous souhaitez creer le DUERP. Le secteur d'activite determinera les categories de risques proposees."
+          />
+        </div>
         <select
           id="company-select"
           value={wizard.companyId}
@@ -85,9 +102,15 @@ export function StepQualification({ wizard }: StepQualificationProps) {
       {/* Site Select */}
       {wizard.companyId && (
         <div className="space-y-2">
-          <label htmlFor="site-select" className="text-sm font-medium">
-            Site (optionnel)
-          </label>
+          <div className="flex items-center gap-2">
+            <label htmlFor="site-select" className="text-sm font-medium">
+              Site (optionnel)
+            </label>
+            <WizardTooltip
+              title="Site specifique"
+              content="Si l'entreprise possede plusieurs sites, vous pouvez cibler le DUERP sur un site precis. Sinon, il couvrira l'ensemble de l'entreprise."
+            />
+          </div>
           {loadingSites ? (
             <div className="flex items-center gap-2 py-2">
               <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />

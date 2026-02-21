@@ -1,10 +1,12 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import type { SeverityLevel, ProbabilityLevel, ActionPriority, ActionStatus } from '@conform-plus/shared';
 import type { ComplianceEvaluationResult } from '@conform-plus/shared';
+import { api } from '@/lib/api';
 
 const STORAGE_KEY = 'conform-plus-duerp-wizard';
+const AUTO_SAVE_DEBOUNCE_MS = 30_000; // 30 seconds
 
 export interface WizardRisk {
   id: string;
@@ -34,12 +36,18 @@ export interface WizardActionPlan {
   is_critical: boolean;
   has_proof: boolean;
   risk_id: string;
+  // PAPRIPACT fields
+  budget_estimate?: string;
+  resources?: string;
+  category?: string;
+  completion_percentage?: number;
 }
 
 export interface WizardState {
   currentStep: number;
   companyId: string;
   siteId: string;
+  duerpId: string; // Server-side DUERP ID for draft saves
   workUnits: WizardWorkUnit[];
   actionPlans: WizardActionPlan[];
   complianceResult: ComplianceEvaluationResult | null;
@@ -49,6 +57,7 @@ const defaultState: WizardState = {
   currentStep: 1,
   companyId: '',
   siteId: '',
+  duerpId: '',
   workUnits: [],
   actionPlans: [],
   complianceResult: null,
@@ -80,6 +89,15 @@ function saveState(state: WizardState) {
 export function useDuerpWizard() {
   const [state, setState] = useState<WizardState>(defaultState);
   const [isHydrated, setIsHydrated] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
+  const saveTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const stateRef = useRef<WizardState>(defaultState);
+
+  // Keep ref in sync
+  useEffect(() => {
+    stateRef.current = state;
+  }, [state]);
 
   // Hydrate from localStorage on mount
   useEffect(() => {
@@ -94,6 +112,38 @@ export function useDuerpWizard() {
     }
   }, [state, isHydrated]);
 
+  // Server-side auto-save debounced
+  const saveDraftToServer = useCallback(async () => {
+    const current = stateRef.current;
+    if (!current.duerpId) return;
+
+    setIsSaving(true);
+    try {
+      await api.put(`/duerps/${current.duerpId}/draft`, current);
+      setLastSavedAt(new Date());
+    } catch {
+      // Silent fail for auto-save — localStorage is fallback
+    } finally {
+      setIsSaving(false);
+    }
+  }, []);
+
+  // Schedule server save on state changes (debounced 30s)
+  useEffect(() => {
+    if (!isHydrated || !state.duerpId) return;
+
+    if (saveTimerRef.current) {
+      clearTimeout(saveTimerRef.current);
+    }
+    saveTimerRef.current = setTimeout(() => {
+      saveDraftToServer();
+    }, AUTO_SAVE_DEBOUNCE_MS);
+
+    return () => {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    };
+  }, [state, isHydrated, saveDraftToServer]);
+
   const setStep = useCallback((step: number) => {
     setState((prev) => ({ ...prev, currentStep: Math.max(1, Math.min(4, step)) }));
   }, []);
@@ -104,6 +154,10 @@ export function useDuerpWizard() {
 
   const setSite = useCallback((siteId: string) => {
     setState((prev) => ({ ...prev, siteId }));
+  }, []);
+
+  const setDuerpId = useCallback((duerpId: string) => {
+    setState((prev) => ({ ...prev, duerpId }));
   }, []);
 
   const addWorkUnit = useCallback(() => {
@@ -195,6 +249,10 @@ export function useDuerpWizard() {
       is_critical: false,
       has_proof: false,
       risk_id: '',
+      budget_estimate: '',
+      resources: '',
+      category: 'prevention',
+      completion_percentage: 0,
     };
     setState((prev) => ({ ...prev, actionPlans: [...prev.actionPlans, newPlan] }));
   }, []);
@@ -239,6 +297,10 @@ export function useDuerpWizard() {
         is_critical: risk.severity === 'critique' || risk.severity === 'eleve',
         has_proof: false,
         risk_id: risk.id,
+        budget_estimate: '',
+        resources: '',
+        category: 'prevention',
+        completion_percentage: 0,
       }));
 
       return { ...prev, actionPlans: generatedPlans };
@@ -259,9 +321,12 @@ export function useDuerpWizard() {
   return {
     ...state,
     isHydrated,
+    isSaving,
+    lastSavedAt,
     setStep,
     setCompany,
     setSite,
+    setDuerpId,
     addWorkUnit,
     updateWorkUnit,
     removeWorkUnit,

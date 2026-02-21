@@ -40,6 +40,8 @@ export class SupabaseAuthGuard implements CanActivate {
     request.user = {
       id: user.id,
       email: user.email,
+      company_id: profile?.company_id || null,
+      role: profile?.role || null,
       ...profile,
     };
 

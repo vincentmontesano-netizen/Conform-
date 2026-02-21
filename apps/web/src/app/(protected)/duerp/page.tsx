@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { FileText, Plus, Loader2 } from 'lucide-react';
+import { FileText, Plus, Loader2, AlertTriangle, Zap } from 'lucide-react';
 import { useDuerps } from '@/hooks/useDuerp';
 import { useCompanies } from '@/hooks/useCompany';
 import { DUERP_STATUS_LABELS } from '@conform-plus/shared';
@@ -42,16 +42,28 @@ export default function DuerpListPage() {
             Gerez vos Documents Uniques d'Evaluation des Risques Professionnels.
           </p>
         </div>
-        <Link
-          href="/duerp/new"
-          className={cn(
-            'inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground',
-            'hover:bg-primary/90 transition-colors'
-          )}
-        >
-          <Plus className="h-4 w-4" />
-          Nouveau DUERP
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/duerp/triggers"
+            className={cn(
+              'inline-flex items-center gap-2 rounded-md border border-input bg-background px-4 py-2 text-sm font-medium',
+              'hover:bg-accent hover:text-accent-foreground transition-colors'
+            )}
+          >
+            <Zap className="h-4 w-4" />
+            Declencheurs
+          </Link>
+          <Link
+            href="/duerp/new"
+            className={cn(
+              'inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground',
+              'hover:bg-primary/90 transition-colors'
+            )}
+          >
+            <Plus className="h-4 w-4" />
+            Nouveau DUERP
+          </Link>
+        </div>
       </div>
 
       {isLoading && (
@@ -109,6 +121,12 @@ export default function DuerpListPage() {
                   <th className="px-4 py-3 text-left font-medium text-muted-foreground">
                     Date creation
                   </th>
+                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">
+                    Prochaine MAJ
+                  </th>
+                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -143,6 +161,33 @@ export default function DuerpListPage() {
                     </td>
                     <td className="px-4 py-3 text-muted-foreground">
                       {formatDate(duerp.created_at)}
+                    </td>
+                    <td className="px-4 py-3">
+                      {(duerp as any).next_update_due ? (
+                        <span
+                          className={cn(
+                            'inline-flex items-center gap-1 text-xs font-medium',
+                            new Date((duerp as any).next_update_due) < new Date()
+                              ? 'text-red-600'
+                              : 'text-muted-foreground'
+                          )}
+                        >
+                          {new Date((duerp as any).next_update_due) < new Date() && (
+                            <AlertTriangle className="h-3 w-3" />
+                          )}
+                          {formatDate((duerp as any).next_update_due)}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">-</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3">
+                      <Link
+                        href={`/duerp/${duerp.id}/actions`}
+                        className="text-xs text-primary hover:underline"
+                      >
+                        Plan d&apos;actions
+                      </Link>
                     </td>
                   </tr>
                 ))}

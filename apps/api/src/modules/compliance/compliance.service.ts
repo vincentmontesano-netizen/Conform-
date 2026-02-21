@@ -44,6 +44,8 @@ export class ComplianceService {
   }
 
   async getAlerts(companyId: string) {
+    if (!companyId) return [];
+
     const client = this.supabaseService.getClient();
     const { data, error } = await client
       .from('compliance_alerts')
@@ -56,6 +58,8 @@ export class ComplianceService {
   }
 
   async getScore(companyId: string) {
+    if (!companyId) return { score: 100, unresolved_alerts: 0 };
+
     const client = this.supabaseService.getClient();
     const { data: alerts, error } = await client
       .from('compliance_alerts')

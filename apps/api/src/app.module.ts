@@ -7,6 +7,15 @@ import { DuerpModule } from './modules/duerp/duerp.module';
 import { AuditLogModule } from './modules/audit-log/audit-log.module';
 import { ComplianceModule } from './modules/compliance/compliance.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
+import { DuerpTriggerModule } from './modules/duerp-trigger/duerp-trigger.module';
+import { UploadModule } from './modules/upload/upload.module';
+import { RegistreModule } from './modules/registre/registre.module';
+import { EpiModule } from './modules/epi/epi.module';
+import { FormationModule } from './modules/formation/formation.module';
+import { SubscriptionModule } from './modules/subscription/subscription.module';
+import { AdminModule } from './modules/admin/admin.module';
+import { KnowledgeModule } from './modules/knowledge/knowledge.module';
+import { ChatbotModule } from './modules/chatbot/chatbot.module';
 import { ConfigModule } from './config/config.module';
 
 @Module({
@@ -17,9 +26,18 @@ import { ConfigModule } from './config/config.module';
     SiteModule,
     ProfileModule,
     DuerpModule,
+    DuerpTriggerModule,
+    UploadModule,
     AuditLogModule,
     ComplianceModule,
     DashboardModule,
+    RegistreModule,
+    EpiModule,
+    FormationModule,
+    SubscriptionModule,
+    AdminModule,
+    KnowledgeModule,
+    ChatbotModule,
   ],
 })
-export class AppModule {}
+export class AppModule { }

@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Post,
+  Put,
   Patch,
   Body,
   Param,
@@ -35,6 +36,11 @@ export class DuerpController {
   @Patch(':id')
   update(@Param('id') id: string, @Body() dto: any) {
     return this.duerpService.update(id, dto);
+  }
+
+  @Put(':id/draft')
+  saveDraft(@Param('id') id: string, @Body() body: any) {
+    return this.duerpService.saveDraft(id, body);
   }
 
   @Post(':id/validate')
@@ -71,7 +77,26 @@ export class DuerpController {
     @Param('id') id: string,
     @Param('planId') planId: string,
     @Body() dto: any,
+    @CurrentUser() user: any,
   ) {
-    return this.duerpService.updateActionPlan(id, planId, dto);
+    return this.duerpService.updateActionPlan(id, planId, dto, user);
+  }
+
+  @Get(':id/action-plans/:planId/logs')
+  getActionPlanLogs(
+    @Param('id') id: string,
+    @Param('planId') planId: string,
+  ) {
+    return this.duerpService.getActionPlanLogs(id, planId);
+  }
+
+  @Post(':id/action-plans/:planId/logs')
+  addActionPlanLog(
+    @Param('id') id: string,
+    @Param('planId') planId: string,
+    @Body() body: { comment: string },
+    @CurrentUser() user: any,
+  ) {
+    return this.duerpService.addActionPlanLog(id, planId, body.comment, user);
   }
 }

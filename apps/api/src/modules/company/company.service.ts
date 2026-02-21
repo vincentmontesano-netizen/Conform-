@@ -8,6 +8,8 @@ export class CompanyService {
   constructor(private readonly supabaseService: SupabaseService) {}
 
   async findAll(companyId: string) {
+    if (!companyId) return [];
+
     const client = this.supabaseService.getClient();
     const { data, error } = await client
       .from('companies')

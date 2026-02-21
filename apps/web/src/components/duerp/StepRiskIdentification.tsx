@@ -14,9 +14,12 @@ import {
   ChevronUp,
   AlertTriangle,
   ShieldAlert,
+  Lightbulb,
+  Zap,
 } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
+import { WizardTooltip } from '@/components/duerp/WizardTooltip';
 import type { useDuerpWizard } from '@/hooks/useDuerpWizard';
 
 interface StepRiskIdentificationProps {
@@ -99,6 +102,66 @@ export function StepRiskIdentification({ wizard }: StepRiskIdentificationProps) 
           )}
         </p>
       </div>
+
+      {/* Risk Score Summary */}
+      {wizard.workUnits.length > 0 && (
+        <div className="flex flex-wrap gap-3">
+          {(() => {
+            const allRisks = wizard.workUnits.flatMap((wu) => wu.risks);
+            const total = allRisks.length;
+            const critical = allRisks.filter((r) => getRiskScore(r.severity, r.probability) >= 9).length;
+            const high = allRisks.filter((r) => { const s = getRiskScore(r.severity, r.probability); return s >= 7 && s < 9; }).length;
+            const medium = allRisks.filter((r) => { const s = getRiskScore(r.severity, r.probability); return s >= 3 && s < 7; }).length;
+            const low = allRisks.filter((r) => getRiskScore(r.severity, r.probability) < 3).length;
+            return (
+              <>
+                <div className="rounded-md border bg-muted/30 px-3 py-1.5 text-xs">
+                  <span className="font-semibold">{total}</span> risque(s) total
+                </div>
+                {critical > 0 && (
+                  <div className="rounded-md border border-red-300 bg-red-50 px-3 py-1.5 text-xs text-red-800">
+                    <span className="font-semibold">{critical}</span> critique(s)
+                  </div>
+                )}
+                {high > 0 && (
+                  <div className="rounded-md border border-orange-300 bg-orange-50 px-3 py-1.5 text-xs text-orange-800">
+                    <span className="font-semibold">{high}</span> eleve(s)
+                  </div>
+                )}
+                {medium > 0 && (
+                  <div className="rounded-md border border-yellow-300 bg-yellow-50 px-3 py-1.5 text-xs text-yellow-800">
+                    <span className="font-semibold">{medium}</span> modere(s)
+                  </div>
+                )}
+                {low > 0 && (
+                  <div className="rounded-md border border-green-300 bg-green-50 px-3 py-1.5 text-xs text-green-800">
+                    <span className="font-semibold">{low}</span> faible(s)
+                  </div>
+                )}
+              </>
+            );
+          })()}
+        </div>
+      )}
+
+      {/* Sector Guidance */}
+      {companyDetail && (
+        <div className="flex items-start gap-3 rounded-lg border border-blue-200 bg-blue-50/50 p-3">
+          <Lightbulb className="mt-0.5 h-4 w-4 shrink-0 text-blue-600" />
+          <div className="text-xs text-blue-800">
+            <span className="font-semibold">Guidance sectorielle ({sector}) :</span>{' '}
+            {sector === 'batiment' && 'Pensez aux chutes de hauteur, a l\'amiante, et aux risques lies aux engins de chantier.'}
+            {sector === 'restauration' && 'Verifiez les risques de brulures, coupures, sols glissants et stress lie au rythme de travail.'}
+            {sector === 'bureau' && 'Focalisez-vous sur les TMS lies au travail sur ecran, le stress et la qualite de l\'air.'}
+            {sector === 'commerce' && 'Attention aux manutentions manuelles, agressions et risques routiers pour les livraisons.'}
+            {sector === 'industrie' && 'Verifiez les risques machines, chimiques, le bruit et les incendies/explosions.'}
+            {sector === 'sante' && 'Pensez aux risques biologiques, manutention de patients et violences.'}
+            {sector === 'transport' && 'Le risque routier est prioritaire. Verifiez aussi les TMS et la manutention.'}
+            {sector === 'agriculture' && 'Risques phytosanitaires, machines agricoles et conditions climatiques a evaluer.'}
+            {(sector === 'services' || sector === 'autre') && 'Evaluez les risques psycho-sociaux, les TMS et les risques electriques.'}
+          </div>
+        </div>
+      )}
 
       {wizard.workUnits.length === 0 && (
         <div className="rounded-lg border border-dashed bg-muted/20 p-8 text-center">
@@ -215,7 +278,13 @@ export function StepRiskIdentification({ wizard }: StepRiskIdentificationProps) 
                   {/* Risks Section */}
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <h4 className="text-sm font-semibold">Risques identifies</h4>
+                      <div className="flex items-center gap-2">
+                        <h4 className="text-sm font-semibold">Risques identifies</h4>
+                        <WizardTooltip
+                          title="Identification"
+                          content="Ajoutez les risques un par un ou utilisez les boutons rapides ci-dessous pour ajouter les risques courants de votre secteur."
+                        />
+                      </div>
                       <button
                         type="button"
                         onClick={() => wizard.addRisk(workUnit.id)}
@@ -228,6 +297,41 @@ export function StepRiskIdentification({ wizard }: StepRiskIdentificationProps) 
                         Ajouter un risque
                       </button>
                     </div>
+
+                    {/* Quick-add buttons by risk category */}
+                    {workUnit.risks.length === 0 && (
+                      <div className="space-y-2">
+                        <p className="text-xs text-muted-foreground flex items-center gap-1">
+                          <Zap className="h-3 w-3" />
+                          Ajout rapide — cliquez pour ajouter un risque courant :
+                        </p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {riskCategories.slice(0, 6).map((cat) => (
+                            <button
+                              key={cat}
+                              type="button"
+                              onClick={() => {
+                                wizard.addRisk(workUnit.id);
+                                // We need to update the last-added risk with the category
+                                setTimeout(() => {
+                                  const currentUnit = wizard.workUnits.find((wu) => wu.id === workUnit.id);
+                                  if (currentUnit && currentUnit.risks.length > 0) {
+                                    const lastRisk = currentUnit.risks[currentUnit.risks.length - 1];
+                                    wizard.updateRisk(workUnit.id, lastRisk.id, { category: cat });
+                                  }
+                                }, 0);
+                              }}
+                              className={cn(
+                                'rounded-full border border-dashed px-2.5 py-1 text-[11px]',
+                                'text-muted-foreground hover:border-primary hover:text-primary transition-colors'
+                              )}
+                            >
+                              + {cat}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
 
                     {workUnit.risks.length === 0 && (
                       <p className="py-4 text-center text-sm text-muted-foreground">

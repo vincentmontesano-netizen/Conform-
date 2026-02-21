@@ -93,3 +93,29 @@ export function useUpdateActionPlan() {
     },
   });
 }
+
+export function useSaveDraft() {
+  return useMutation({
+    mutationFn: ({ duerpId, draftContent }: { duerpId: string; draftContent: any }) =>
+      api.put(`/duerps/${duerpId}/draft`, draftContent),
+  });
+}
+
+export function useActionPlanLogs(duerpId: string, planId: string) {
+  return useQuery({
+    queryKey: ['duerps', duerpId, 'action-plans', planId, 'logs'],
+    queryFn: () => api.get(`/duerps/${duerpId}/action-plans/${planId}/logs`),
+    enabled: !!duerpId && !!planId,
+  });
+}
+
+export function useAddActionPlanLog() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ duerpId, planId, comment }: { duerpId: string; planId: string; comment: string }) =>
+      api.post(`/duerps/${duerpId}/action-plans/${planId}/logs`, { comment }),
+    onSuccess: (_, { duerpId, planId }) => {
+      queryClient.invalidateQueries({ queryKey: ['duerps', duerpId, 'action-plans', planId, 'logs'] });
+    },
+  });
+}

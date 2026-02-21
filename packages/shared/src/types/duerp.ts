@@ -1,4 +1,4 @@
-import { DuerpStatus, SeverityLevel, ProbabilityLevel, ActionPriority, ActionStatus } from './enums';
+import { DuerpStatus, SeverityLevel, ProbabilityLevel, ActionPriority, ActionStatus, DuerpTriggerType, ActionPlanLogEventType } from './enums';
 
 export interface DuerpDocument {
   id: string;
@@ -9,6 +9,9 @@ export interface DuerpDocument {
   created_by: string;
   created_at: string;
   updated_at: string;
+  last_validated_at: string | null;
+  next_update_due: string | null;
+  draft_content: Record<string, unknown> | null;
 }
 
 export interface DuerpVersion {
@@ -54,6 +57,10 @@ export interface ActionPlan {
   is_critical: boolean;
   has_proof: boolean;
   proof_url: string | null;
+  budget_estimate: number | null;
+  resources: string | null;
+  category: string;
+  completion_percentage: number;
   created_at: string;
   updated_at: string;
 }
@@ -97,6 +104,32 @@ export interface DuerpVersionContent {
   complianceResult: ComplianceEvaluationResult | null;
   validatedBy: string;
   validatedAt: string;
+}
+
+export interface DuerpTrigger {
+  id: string;
+  company_id: string;
+  duerp_id: string | null;
+  trigger_type: DuerpTriggerType;
+  title: string;
+  description: string | null;
+  occurred_at: string;
+  is_resolved: boolean;
+  resolved_by_duerp_version_id: string | null;
+  created_by: string;
+  created_at: string;
+  resolved_at: string | null;
+}
+
+export interface ActionPlanLog {
+  id: string;
+  action_plan_id: string;
+  event_type: ActionPlanLogEventType;
+  previous_value: Record<string, unknown> | null;
+  new_value: Record<string, unknown> | null;
+  comment: string | null;
+  created_by: string;
+  created_at: string;
 }
 
 export interface ComplianceEvaluationResult {

@@ -11,6 +11,8 @@ export class AuditLogService {
     page?: number,
     pageSize?: number,
   ) {
+    if (!companyId) return { data: [], total: 0, page: 1, pageSize: 20 };
+
     const client = this.supabaseService.getClient();
     const size = pageSize && pageSize > 0 ? Math.min(pageSize, 100) : 20;
     const currentPage = page && page > 0 ? page : 1;

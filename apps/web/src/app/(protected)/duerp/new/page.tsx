@@ -5,7 +5,8 @@ import { StepQualification } from '@/components/duerp/StepQualification';
 import { StepRiskIdentification } from '@/components/duerp/StepRiskIdentification';
 import { StepActionPlan } from '@/components/duerp/StepActionPlan';
 import { StepValidation } from '@/components/duerp/StepValidation';
-import { Check } from 'lucide-react';
+import { WizardTimer } from '@/components/duerp/WizardTimer';
+import { Check, Cloud, CloudOff, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const STEPS = [
@@ -35,7 +36,7 @@ export default function DuerpWizardPage() {
       case 3:
         return wizard.actionPlans.length > 0;
       case 4:
-        return false; // Last step, no next
+        return false;
       default:
         return false;
     }
@@ -45,10 +46,44 @@ export default function DuerpWizardPage() {
 
   return (
     <div className="mx-auto max-w-5xl space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold">Nouveau DUERP</h1>
-        <p className="text-sm text-muted-foreground">
-          Assistant de creation du Document Unique d'Evaluation des Risques Professionnels.
+      {/* Header with Timer + Auto-save indicator */}
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold">Nouveau DUERP</h1>
+          <p className="text-sm text-muted-foreground">
+            Assistant de creation du Document Unique d&apos;Evaluation des Risques Professionnels.
+          </p>
+        </div>
+        <div className="flex flex-col items-end gap-2">
+          <WizardTimer currentStep={wizard.currentStep} />
+          {/* Auto-save status */}
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            {wizard.isSaving ? (
+              <>
+                <Loader2 className="h-3 w-3 animate-spin" />
+                <span>Sauvegarde...</span>
+              </>
+            ) : wizard.lastSavedAt ? (
+              <>
+                <Cloud className="h-3 w-3 text-green-500" />
+                <span>Sauvegarde auto</span>
+              </>
+            ) : wizard.duerpId ? (
+              <>
+                <CloudOff className="h-3 w-3" />
+                <span>En attente de sauvegarde</span>
+              </>
+            ) : null}
+          </div>
+        </div>
+      </div>
+
+      {/* Legal notice banner */}
+      <div className="rounded-lg border border-blue-200 bg-blue-50/50 px-4 py-3">
+        <p className="text-xs text-blue-800">
+          <span className="font-semibold">Obligation legale :</span> Le DUERP est obligatoire pour tout employeur
+          (art. R4121-1 du Code du travail), y compris les entreprises sans salarie.
+          Il doit etre mis a jour au minimum une fois par an.
         </p>
       </div>
 
