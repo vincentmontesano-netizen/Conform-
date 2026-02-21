@@ -1,4 +1,4 @@
-import { EpiEtat, EpiStatut, EpiControleResultat } from './enums';
+import { EpiEtat, EpiStatut, EpiControleResultat } from './enums.js';
 
 export interface EpiCategory {
   id: string;

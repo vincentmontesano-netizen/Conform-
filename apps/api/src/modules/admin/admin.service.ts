@@ -96,4 +96,34 @@ export class AdminService {
         if (error) throw error;
         return data;
     }
+
+    async getSettings() {
+        const client = this.supabaseService.getClient();
+        const { data, error } = await client
+            .from('app_settings')
+            .select('*')
+            .order('key', { ascending: true });
+
+        if (error) throw error;
+        return data;
+    }
+
+    async updateSetting(key: string, value: any, description?: string) {
+        const client = this.supabaseService.getClient();
+
+        const updatePayload: any = { value, updated_at: new Date().toISOString() };
+        if (description !== undefined) {
+            updatePayload.description = description;
+        }
+
+        const { data, error } = await client
+            .from('app_settings')
+            .update(updatePayload)
+            .eq('key', key)
+            .select()
+            .single();
+
+        if (error) throw error;
+        return data;
+    }
 }

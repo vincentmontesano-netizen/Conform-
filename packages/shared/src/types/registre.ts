@@ -1,4 +1,4 @@
-import { RegistreType } from './enums';
+import { RegistreType } from './enums.js';
 
 export interface Registre {
   id: string;

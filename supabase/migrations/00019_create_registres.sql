@@ -24,9 +24,11 @@ CREATE TABLE registres (
   is_active BOOLEAN DEFAULT true,
   created_by UUID NOT NULL REFERENCES auth.users(id),
   created_at TIMESTAMPTZ DEFAULT now(),
-  updated_at TIMESTAMPTZ DEFAULT now(),
-  UNIQUE(company_id, COALESCE(site_id, '00000000-0000-0000-0000-000000000000'::uuid), type)
+  updated_at TIMESTAMPTZ DEFAULT now()
 );
+
+-- Index d'unicite au lieu d'une contrainte unique impossible avec COALESCE
+CREATE UNIQUE INDEX registres_company_site_type_unq ON registres (company_id, COALESCE(site_id, '00000000-0000-0000-0000-000000000000'::uuid), type);
 
 -- Entrees du registre (lignes)
 CREATE TABLE registre_entries (

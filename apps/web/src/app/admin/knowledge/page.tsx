@@ -99,7 +99,8 @@ export default function AdminKnowledgePage() {
             if (dbError) throw dbError;
 
             // 3. Trigger Mistral API Sync (via NestJS backend)
-            const res = await fetch('/api/knowledge/sync', {
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+            const res = await fetch(`${apiUrl}/knowledge/sync`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ documentId: doc.id }),

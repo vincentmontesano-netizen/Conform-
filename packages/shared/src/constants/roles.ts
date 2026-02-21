@@ -1,4 +1,4 @@
-import { UserRole } from '../types/enums';
+import { UserRole } from '../types/enums.js';
 
 export const ROLE_LABELS: Record<UserRole, string> = {
   [UserRole.ADMIN]: 'Administrateur',

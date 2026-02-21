@@ -49,4 +49,19 @@ export class AdminController {
     ) {
         return this.adminService.updateSubscription(companyId, body.plan, body.status);
     }
+
+    /** GET /admin/settings — Récupérer tous les paramètres globaux */
+    @Get('settings')
+    getSettings() {
+        return this.adminService.getSettings();
+    }
+
+    /** PATCH /admin/settings/:key — Mettre à jour un paramètre global */
+    @Patch('settings/:key')
+    updateSetting(
+        @Param('key') key: string,
+        @Body() body: { value: any; description?: string },
+    ) {
+        return this.adminService.updateSetting(key, body.value, body.description);
+    }
 }

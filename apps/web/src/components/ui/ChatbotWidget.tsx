@@ -38,7 +38,8 @@ export function ChatbotWidget() {
 
         try {
             // Appel API Proxy vers Mistral (NestJS)
-            const res = await fetch('/api/chatbot/message', {
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+            const res = await fetch(`${apiUrl}/chatbot/message`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -153,8 +154,8 @@ export function ChatbotWidget() {
                             >
                                 <div
                                     className={`rounded-2xl px-4 py-2.5 text-[13px] leading-relaxed shadow-sm ${msg.role === 'user'
-                                            ? 'bg-blue-600 text-white rounded-br-none'
-                                            : 'bg-[#1e2532] text-white/90 border border-white/5 rounded-bl-none'
+                                        ? 'bg-blue-600 text-white rounded-br-none'
+                                        : 'bg-[#1e2532] text-white/90 border border-white/5 rounded-bl-none'
                                         }`}
                                     style={{ whiteSpace: 'pre-wrap' }}
                                 >

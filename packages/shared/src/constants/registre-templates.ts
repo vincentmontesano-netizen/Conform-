@@ -1,4 +1,4 @@
-import { RegistreType } from '../types/enums';
+import { RegistreType } from '../types/enums.js';
 import type { RegistreTemplate } from '../types/registre';
 
 export const REGISTRE_TYPE_LABELS: Record<RegistreType, string> = {

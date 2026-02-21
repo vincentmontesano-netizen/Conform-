@@ -1,4 +1,4 @@
-import { DuerpStatus, SeverityLevel, ProbabilityLevel, ActionPriority, ActionStatus, DuerpTriggerType, ActionPlanLogEventType } from './enums';
+import { DuerpStatus, SeverityLevel, ProbabilityLevel, ActionPriority, ActionStatus, DuerpTriggerType, ActionPlanLogEventType } from './enums.js';
 
 export interface DuerpDocument {
   id: string;

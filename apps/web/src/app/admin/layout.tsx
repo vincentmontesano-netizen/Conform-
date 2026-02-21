@@ -1,5 +1,5 @@
 import { Sidebar } from '@/components/layout/Sidebar';
-import { BookOpen, ShieldCheck, Users, Building2, ScrollText, BarChart3, LogOut } from 'lucide-react';
+import { BookOpen, ShieldCheck, Users, Building2, ScrollText, BarChart3, LogOut, Settings } from 'lucide-react';
 import Link from 'next/link';
 
 const adminNav = [
@@ -8,6 +8,7 @@ const adminNav = [
     { name: 'Utilisateurs', href: '/admin/users', icon: Users },
     { name: 'Journal d\'audit', href: '/admin/audit', icon: ScrollText },
     { name: 'Base Knowledge', href: '/admin/knowledge', icon: BookOpen }, // NOUVEAU
+    { name: 'Paramètres', href: '/admin/settings', icon: Settings },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
