@@ -1,8 +1,7 @@
 'use client';
 
-import { use } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { Building2, MapPin, Pencil, Plus, ArrowLeft, Trash2, Loader2 } from 'lucide-react';
 import { useCompany, useDeleteCompany } from '@/hooks/useCompany';
 import { SECTORS } from '@conform-plus/shared';
@@ -21,12 +20,9 @@ function formatDate(dateString: string): string {
   });
 }
 
-export default function CompanyDetailPage({
-  params,
-}: {
-  params: Promise<{ companyId: string }>;
-}) {
-  const { companyId } = use(params);
+export default function CompanyDetailPage() {
+  const params = useParams();
+  const companyId = params.companyId as string;
   const router = useRouter();
   const { data: company, isLoading, error } = useCompany(companyId);
   const deleteCompany = useDeleteCompany();

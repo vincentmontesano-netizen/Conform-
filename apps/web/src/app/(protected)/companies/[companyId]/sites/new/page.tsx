@@ -1,7 +1,7 @@
 'use client';
 
-import { use, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { useCreateSite } from '@/hooks/useCompany';
@@ -11,12 +11,9 @@ import { ZodError } from 'zod';
 
 type FieldErrors = Record<string, string>;
 
-export default function NewSitePage({
-  params,
-}: {
-  params: Promise<{ companyId: string }>;
-}) {
-  const { companyId } = use(params);
+export default function NewSitePage() {
+  const params = useParams();
+  const companyId = params.companyId as string;
   const router = useRouter();
   const createSite = useCreateSite();
 

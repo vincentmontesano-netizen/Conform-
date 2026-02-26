@@ -1,18 +1,15 @@
 'use client';
 
-import { use } from 'react';
 import Link from 'next/link';
+import { useParams } from 'next/navigation';
 import { Loader2, HardHat, Printer, ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useEpiItem } from '@/hooks/useEpi';
 import { EPI_ETAT_LABELS, EPI_STATUT_LABELS, EPI_CONTROLE_RESULTAT_LABELS } from '@conform-plus/shared';
 
-export default function EpiAttestationPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = use(params);
+export default function EpiAttestationPage() {
+  const params = useParams();
+  const id = params.id as string;
   const { data: item, isLoading } = useEpiItem(id);
 
   if (isLoading) {

@@ -16,6 +16,8 @@ import { SubscriptionModule } from './modules/subscription/subscription.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { KnowledgeModule } from './modules/knowledge/knowledge.module';
 import { ChatbotModule } from './modules/chatbot/chatbot.module';
+import { EmployeeModule } from './modules/employee/employee.module';
+import { InspectionModule } from './modules/inspection/inspection.module';
 import { ConfigModule } from './config/config.module';
 
 @Module({
@@ -38,6 +40,8 @@ import { ConfigModule } from './config/config.module';
     AdminModule,
     KnowledgeModule,
     ChatbotModule,
+    EmployeeModule,
+    InspectionModule,
   ],
 })
 export class AppModule { }

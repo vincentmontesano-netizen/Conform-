@@ -23,6 +23,8 @@ export function useDuerpTriggers(resolved?: boolean) {
   return useQuery({
     queryKey: ['duerp-triggers', resolved],
     queryFn: () => api.get<DuerpTrigger[]>(`/duerp-triggers${params}`),
+    retry: 1,
+    retryDelay: 2000,
   });
 }
 

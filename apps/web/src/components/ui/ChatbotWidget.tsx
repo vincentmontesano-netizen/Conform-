@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Send, X, Loader2, Bot, AlertCircle } from 'lucide-react';
+import { Send, X, Bot, AlertCircle } from 'lucide-react';
+import { createClient } from '@/lib/supabase/client';
 
 interface Message {
     role: 'user' | 'assistant';
@@ -9,8 +10,15 @@ interface Message {
     sources?: string[];
 }
 
-export function ChatbotWidget() {
-    const [isOpen, setIsOpen] = useState(false);
+interface ChatbotWidgetProps {
+    /** When true, renders the chat inline (no floating button) - for Settings page */
+    embedded?: boolean;
+}
+
+export function ChatbotWidget({ embedded = false }: ChatbotWidgetProps) {
+    // Affiche par défaut en mode widget (layout protégé = utilisateur connecté)
+    const [isAuthenticated, setIsAuthenticated] = useState<boolean>(!embedded);
+    const [isOpen, setIsOpen] = useState(embedded);
     const [messages, setMessages] = useState<Message[]>([
         {
             role: 'assistant',
@@ -21,11 +29,26 @@ export function ChatbotWidget() {
     const [isLoading, setIsLoading] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
+    // Met à jour la visibilité si l'utilisateur se déconnecte
+    useEffect(() => {
+        const supabase = createClient();
+        const checkSession = async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            setIsAuthenticated(!!session);
+        };
+        checkSession();
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(() => checkSession());
+        return () => subscription.unsubscribe();
+    }, []);
+
     useEffect(() => {
         if (messagesEndRef.current) {
             messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
         }
     }, [messages, isOpen]);
+
+    // Ne pas afficher si non connecte (sauf en mode embedded)
+    if (!embedded && !isAuthenticated) return null;
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
@@ -38,7 +61,7 @@ export function ChatbotWidget() {
 
         try {
             // Appel API Proxy vers Mistral (NestJS)
-            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
             const res = await fetch(`${apiUrl}/chatbot/message`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -47,7 +70,11 @@ export function ChatbotWidget() {
                 }),
             });
 
-            if (!res.ok) throw new Error('Erreur de communication avec l\'assistant.');
+            if (!res.ok) {
+                const errData = await res.json().catch(() => ({}));
+                const msg = errData?.message || `Erreur ${res.status}`;
+                throw new Error(msg);
+            }
 
             const data = await res.json();
 
@@ -74,8 +101,8 @@ export function ChatbotWidget() {
 
     return (
         <>
-            {/* Bouton Widget Flottant (Exact HTML from user requirements) */}
-            {!isOpen && (
+            {/* Bouton Widget Flottant - masqué en mode embedded */}
+            {!embedded && !isOpen && (
                 <button
                     type="button"
                     onClick={() => setIsOpen(true)}
@@ -109,17 +136,17 @@ export function ChatbotWidget() {
                             zIndex: 2147483646,
                         }}
                     >
-                        <svg width="55" height="55" viewBox="0 0 1120 1120" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path fillRule="evenodd" clipRule="evenodd" d="M252 434C252 372.144 302.144 322 364 322H770C831.856 322 882 372.144 882 434V614.459L804.595 585.816C802.551 585.06 800.94 583.449 800.184 581.405L763.003 480.924C760.597 474.424 751.403 474.424 748.997 480.924L711.816 581.405C711.06 583.449 709.449 585.06 707.405 585.816L606.924 622.997C600.424 625.403 600.424 634.597 606.924 637.003L707.405 674.184C709.449 674.94 711.06 676.551 711.816 678.595L740.459 756H629.927C629.648 756.476 629.337 756.945 628.993 757.404L578.197 825.082C572.597 832.543 561.403 832.543 555.803 825.082L505.007 757.404C504.663 756.945 504.352 756.476 504.073 756H364C302.144 756 252 705.856 252 644V434ZM633.501 471.462C632.299 468.212 627.701 468.212 626.499 471.462L619.252 491.046C618.874 492.068 618.068 492.874 617.046 493.252L597.462 500.499C594.212 501.701 594.212 506.299 597.462 507.501L617.046 514.748C618.068 515.126 618.874 515.932 619.252 516.954L626.499 536.538C627.701 539.788 632.299 539.788 633.501 536.538L640.748 516.954C641.126 515.932 641.932 515.126 642.954 514.748L662.538 507.501C665.788 506.299 665.788 501.701 662.538 500.499L642.954 493.252C641.932 492.874 641.126 492.068 640.748 491.046L633.501 471.462Z" fill="white"></path>
-                            <path d="M771.545 755.99C832.175 755.17 881.17 706.175 881.99 645.545L804.595 674.184C802.551 674.94 800.94 676.551 800.184 678.595L771.545 755.99Z" fill="white"></path>
-                        </svg>
+                        <Bot className="h-7 w-7 text-white" />
                     </div>
                 </button>
             )}
 
-            {/* Interface de Chat (Popover) */}
+            {/* Interface de Chat - fixed en mode widget, inline en mode embedded */}
             {isOpen && (
-                <div className="fixed bottom-6 right-6 z-[2147483647] flex h-[600px] w-full max-w-[400px] flex-col overflow-hidden rounded-2xl border border-[#white/10] bg-[#1a1f28] shadow-2xl sm:bottom-8 sm:right-8 transition-all animate-in slide-in-from-bottom-5">
+                <div className={embedded
+                    ? "flex h-[500px] w-full flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm"
+                    : "fixed bottom-6 right-6 z-[2147483647] flex h-[600px] w-full max-w-[400px] flex-col overflow-hidden rounded-2xl border border-[#white/10] bg-[#1a1f28] shadow-2xl sm:bottom-8 sm:right-8 transition-all animate-in slide-in-from-bottom-5"
+                }>
                     {/* Header */}
                     <div className="flex items-center justify-between border-b border-white/10 bg-blue-600 px-4 py-3">
                         <div className="flex items-center gap-3">
@@ -131,12 +158,14 @@ export function ChatbotWidget() {
                                 <span className="text-[10px] text-white/80">Propulsé par Mistral AI</span>
                             </div>
                         </div>
-                        <button
-                            onClick={() => setIsOpen(false)}
-                            className="rounded-full p-1.5 text-white/80 transition-colors hover:bg-white/20 hover:text-white"
-                        >
-                            <X className="h-4 w-4" />
-                        </button>
+                        {!embedded && (
+                            <button
+                                onClick={() => setIsOpen(false)}
+                                className="rounded-full p-1.5 text-white/80 transition-colors hover:bg-white/20 hover:text-white"
+                            >
+                                <X className="h-4 w-4" />
+                            </button>
+                        )}
                     </div>
 
                     {/* Messages Area */}

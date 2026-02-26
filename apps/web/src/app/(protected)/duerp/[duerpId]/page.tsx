@@ -1,7 +1,7 @@
 'use client';
 
-import { use } from 'react';
 import Link from 'next/link';
+import { useParams } from 'next/navigation';
 import { useDuerp } from '@/hooks/useDuerp';
 import { useCompany } from '@/hooks/useCompany';
 import { DUERP_STATUS_LABELS } from '@conform-plus/shared';
@@ -40,12 +40,9 @@ function formatDate(dateString: string): string {
   });
 }
 
-export default function DuerpDetailPage({
-  params,
-}: {
-  params: Promise<{ duerpId: string }>;
-}) {
-  const { duerpId } = use(params);
+export default function DuerpDetailPage() {
+  const params = useParams();
+  const duerpId = params.duerpId as string;
   const { data: duerp, isLoading, error } = useDuerp(duerpId);
   const { data: companyDetail } = useCompany(duerp?.company_id ?? '');
 

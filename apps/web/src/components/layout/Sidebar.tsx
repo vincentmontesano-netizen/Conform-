@@ -15,9 +15,10 @@ import {
   LogOut,
   ChevronRight,
   Lock,
+  Users,
+  ClipboardCheck,
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
-import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useSubscription } from '@/providers/SubscriptionContext';
 import { UpsellModal } from '@/components/ui/UpsellModal';
@@ -34,10 +35,12 @@ interface NavItem {
 const navigation: NavItem[] = [
   { name: 'Tableau de bord', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Entreprises', href: '/companies', icon: Building2 },
+  { name: 'Salaries', href: '/employees', icon: Users },
   { name: 'DUERP', href: '/duerp', icon: FileText },
   { name: 'Registres', href: '/registres', icon: BookOpen },
   { name: 'EPI', href: '/epi', icon: HardHat, requiresPro: true, featureKey: 'epi' },
   { name: 'Formations', href: '/formations', icon: GraduationCap, requiresPro: true, featureKey: 'formations' },
+  { name: 'Inspection', href: '/inspection', icon: ClipboardCheck },
   { name: 'Alertes', href: '/alerts', icon: AlertTriangle },
   { name: 'Journal d\'audit', href: '/audit-log', icon: ScrollText },
   { name: 'Paramètres', href: '/settings', icon: Settings },
@@ -45,7 +48,6 @@ const navigation: NavItem[] = [
 
 export function Sidebar() {
   const pathname = usePathname();
-  const router = useRouter();
   const { canAccess, isLoading } = useSubscription();
   const [upsellModal, setUpsellModal] = useState<{ open: boolean; featureName: string }>({
     open: false,
@@ -55,8 +57,8 @@ export function Sidebar() {
   async function handleLogout() {
     const supabase = createClient();
     await supabase.auth.signOut();
-    router.push('/login');
-    router.refresh();
+    // Redirection plein écran vers la landing pour réinitialiser tout l'état client
+    window.location.href = '/';
   }
 
   function handleLockedClick(featureName: string) {

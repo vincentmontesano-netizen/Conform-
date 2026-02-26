@@ -1,7 +1,7 @@
 'use client';
 
-import { use } from 'react';
 import Link from 'next/link';
+import { useParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { MapPin, ArrowLeft, Loader2 } from 'lucide-react';
 import { api } from '@/lib/api';
@@ -15,12 +15,10 @@ function formatDate(dateString: string): string {
   });
 }
 
-export default function SiteDetailPage({
-  params,
-}: {
-  params: Promise<{ companyId: string; siteId: string }>;
-}) {
-  const { companyId, siteId } = use(params);
+export default function SiteDetailPage() {
+  const params = useParams();
+  const companyId = params.companyId as string;
+  const siteId = params.siteId as string;
 
   const { data: site, isLoading, error } = useQuery({
     queryKey: ['companies', companyId, 'sites', siteId],

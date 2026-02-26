@@ -5,13 +5,26 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { ROLES_KEY } from '../decorators/roles.decorator';
+import { ROLES_KEY, ALLOW_WHEN_NO_COMPANY_KEY } from '../decorators/roles.decorator';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
   constructor(private reflector: Reflector) {}
 
   canActivate(context: ExecutionContext): boolean {
+    const allowWhenNoCompany = this.reflector.getAllAndOverride<boolean>(
+      ALLOW_WHEN_NO_COMPANY_KEY,
+      [context.getHandler(), context.getClass()],
+    );
+
+    const request = context.switchToHttp().getRequest();
+    const { user } = request;
+
+    // Permet la création de première entreprise sans vérifier le rôle
+    if (allowWhenNoCompany && !user?.company_id) {
+      return true;
+    }
+
     const requiredRoles = this.reflector.getAllAndOverride<string[]>(
       ROLES_KEY,
       [context.getHandler(), context.getClass()],
@@ -20,8 +33,6 @@ export class RolesGuard implements CanActivate {
     if (!requiredRoles) {
       return true;
     }
-
-    const { user } = context.switchToHttp().getRequest();
 
     if (!user?.role) {
       throw new ForbiddenException('Role non defini');

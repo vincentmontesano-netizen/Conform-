@@ -33,9 +33,12 @@ export async function updateSession(request: NextRequest) {
 
   const isAuthPage =
     pathname.startsWith('/login') ||
-    pathname.startsWith('/register');
+    pathname.startsWith('/register') ||
+    pathname.startsWith('/forgot-password') ||
+    pathname.startsWith('/reset-password');
 
-  const isPublicPage = pathname === '/' || isAuthPage;
+  const isCallbackRoute = pathname.startsWith('/auth/callback');
+  const isPublicPage = pathname === '/' || isAuthPage || isCallbackRoute;
   const isAdminPage = pathname.startsWith('/admin');
 
   // ─── Unauthenticated: redirect to login ───
@@ -46,10 +49,32 @@ export async function updateSession(request: NextRequest) {
   }
 
   // ─── Authenticated on auth pages: redirect to dashboard ───
-  if (user && isAuthPage) {
+  // Exception: /reset-password must stay accessible (user is authenticated via recovery token)
+  if (user && isAuthPage && !pathname.startsWith('/reset-password')) {
     const url = request.nextUrl.clone();
     url.pathname = '/dashboard';
     return NextResponse.redirect(url);
+  }
+
+  // ─── Onboarding: redirect to company creation if no company ───
+  const isOnboardingExempt =
+    pathname.startsWith('/companies/new') ||
+    pathname.startsWith('/companies') && pathname === '/companies' ||
+    pathname.startsWith('/settings') ||
+    pathname.startsWith('/api/');
+
+  if (user && !isPublicPage && !isAdminPage && !isOnboardingExempt) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('company_id')
+      .eq('user_id', user.id)
+      .single();
+
+    if (!profile?.company_id) {
+      const url = request.nextUrl.clone();
+      url.pathname = '/companies/new';
+      return NextResponse.redirect(url);
+    }
   }
 
   // ─── Admin pages: verify super_admin role + MFA (aal2) ───

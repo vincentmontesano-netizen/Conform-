@@ -7,9 +7,12 @@ export * from './types/audit-log';
 export * from './types/registre';
 export * from './types/epi';
 export * from './types/formation';
+export * from './types/employee';
+export * from './types/inspection';
 
 // Constants
 export * from './constants/roles';
+export * from './constants/user-types';
 export * from './constants/risk-categories';
 export * from './constants/registre-templates';
 export * from './constants/epi-category-presets';

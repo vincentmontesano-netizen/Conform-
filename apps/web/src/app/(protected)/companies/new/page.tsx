@@ -21,10 +21,12 @@ export default function NewCompanyPage() {
   const [employeeCount, setEmployeeCount] = useState('');
   const [hasPhysicalSite, setHasPhysicalSite] = useState(true);
   const [errors, setErrors] = useState<FieldErrors>({});
+  const [apiError, setApiError] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setErrors({});
+    setApiError(null);
 
     try {
       const data = createCompanySchema.parse({
@@ -47,6 +49,8 @@ export default function NewCompanyPage() {
           }
         }
         setErrors(fieldErrors);
+      } else {
+        setApiError(err instanceof Error ? err.message : 'Erreur lors de la création');
       }
     }
   }
@@ -177,10 +181,10 @@ export default function NewCompanyPage() {
           </div>
 
           {/* Server error */}
-          {createCompany.error && (
+          {(apiError || createCompany.error) && (
             <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-3">
               <p className="text-sm text-destructive">
-                {createCompany.error.message}
+                {apiError ?? createCompany.error?.message}
               </p>
             </div>
           )}

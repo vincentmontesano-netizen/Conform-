@@ -1,7 +1,8 @@
 'use client';
 
-import { use, useState } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
+import { useParams } from 'next/navigation';
 import {
   Loader2,
   Plus,
@@ -30,12 +31,9 @@ import {
   REGISTRE_TYPE_LABELS,
 } from '@conform-plus/shared';
 
-export default function RegistreTypePage({
-  params,
-}: {
-  params: Promise<{ type: string }>;
-}) {
-  const { type } = use(params);
+export default function RegistreTypePage() {
+  const params = useParams();
+  const type = params.type as string;
   const registreType = type as RegistreType;
   const template = REGISTRE_TEMPLATES[registreType];
 

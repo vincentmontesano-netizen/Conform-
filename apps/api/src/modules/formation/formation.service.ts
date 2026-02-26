@@ -160,8 +160,9 @@ export class FormationService {
    * Construit la matrice de conformite : employees x formation_types.
    *
    * 1. Fetch tous les formation_types actifs
-   * 2. Fetch TOUTES les registre_entries non-archivees (formations + habilitations)
-   * 3. Extraire les employees uniques depuis le JSONB salarie_nom
+   * 2. Fetch les employees actifs depuis la table employees (source primaire)
+   *    + fallback sur les salarie_nom des registre_entries si aucun employee
+   * 3. Fetch TOUTES les registre_entries non-archivees (formations + habilitations)
    * 4. Pour chaque employee x type, trouver l'entree la plus recente, classifier
    * 5. Retourner la matrice avec summary
    */
@@ -215,17 +216,41 @@ export class FormationService {
     if (entriesError) throw entriesError;
     const entries = allEntries || [];
 
-    // 3. Extract unique employees
-    const employeeMap = new Map<string, { nom: string; poste: string | null; site: string | null }>();
-    for (const entry of entries) {
-      const data = entry.data as Record<string, any>;
-      const nom = data?.salarie_nom;
-      if (nom && !employeeMap.has(nom)) {
-        employeeMap.set(nom, {
-          nom,
-          poste: data?.salarie_poste || null,
-          site: null,
+    // 3. Build employee list: primary source = employees table, fallback = JSONB extraction
+    const { data: dbEmployees } = await client
+      .from('employees')
+      .select('id, nom, prenom, poste, site_id, sites(name)')
+      .eq('company_id', companyId)
+      .eq('is_active', true)
+      .order('nom', { ascending: true });
+
+    type EmployeeRow = { nom: string; poste: string | null; site: string | null; employee_id: string | null };
+    const employeeMap = new Map<string, EmployeeRow>();
+
+    if (dbEmployees && dbEmployees.length > 0) {
+      // Use employees table as primary source
+      for (const emp of dbEmployees) {
+        const fullName = `${emp.prenom || ''} ${emp.nom}`.trim();
+        employeeMap.set(fullName, {
+          nom: fullName,
+          poste: emp.poste || null,
+          site: (emp as any).sites?.name || null,
+          employee_id: emp.id,
         });
+      }
+    } else {
+      // Fallback: extract unique employees from JSONB (backward compat)
+      for (const entry of entries) {
+        const data = entry.data as Record<string, any>;
+        const nom = data?.salarie_nom;
+        if (nom && !employeeMap.has(nom)) {
+          employeeMap.set(nom, {
+            nom,
+            poste: data?.salarie_poste || null,
+            site: null,
+            employee_id: null,
+          });
+        }
       }
     }
 
@@ -254,8 +279,13 @@ export class FormationService {
           const data = entry.data as Record<string, any>;
           const registreType = (entry as any).registres?.type;
 
-          // Must be same employee
-          if (data?.salarie_nom !== employee.nom) return false;
+          // Must be same employee — match by employee_id FK if available, else by name
+          const entryEmployeeId = (entry as any).employee_id;
+          if (employee.employee_id && entryEmployeeId) {
+            if (entryEmployeeId !== employee.employee_id) return false;
+          } else {
+            if (data?.salarie_nom !== employee.nom) return false;
+          }
 
           // Must match registre type
           if (registreType !== ft.match_registre_type) return false;

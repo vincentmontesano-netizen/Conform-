@@ -1,9 +1,15 @@
-import { Controller, Post, Body, InternalServerErrorException } from '@nestjs/common';
+import { Controller, Get, Post, Body, InternalServerErrorException } from '@nestjs/common';
 import { ChatbotService } from './chatbot.service';
 
 @Controller('chatbot')
 export class ChatbotController {
     constructor(private readonly chatbotService: ChatbotService) { }
+
+    /** Vérifie que Mistral est configuré (clé + agent) */
+    @Get('health')
+    health() {
+        return this.chatbotService.checkConfig();
+    }
 
     @Post('message')
     async sendMessage(@Body() body: { messages: { role: string; content: string }[] }) {

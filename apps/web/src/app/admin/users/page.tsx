@@ -40,8 +40,8 @@ export default function AdminUsersPage() {
             .select('id, user_id, first_name, last_name, role, company_id, companies(name)')
             .order('created_at', { ascending: false });
 
-        setProfiles((data as Profile[]) ?? []);
-        setFiltered((data as Profile[]) ?? []);
+        setProfiles((data as unknown as Profile[]) ?? []);
+        setFiltered((data as unknown as Profile[]) ?? []);
         setIsLoading(false);
     }
 

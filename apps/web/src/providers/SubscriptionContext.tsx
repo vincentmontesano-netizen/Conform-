@@ -2,8 +2,10 @@
 
 import { createContext, useContext, useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import type { SubscriptionPlan as SharedPlan, AppModule } from '@conform-plus/shared';
+import { planHasModule } from '@conform-plus/shared';
 
-export type SubscriptionPlan = 'basic' | 'pro' | 'premium' | 'enterprise';
+export type SubscriptionPlan = SharedPlan;
 export type SubscriptionStatus = 'active' | 'trialing' | 'canceled' | 'past_due';
 
 export interface Subscription {
@@ -15,6 +17,9 @@ export interface Subscription {
     current_period_end: string | null;
 }
 
+/** Modules payants (nécessitent plan Pro+) */
+export type PaidModule = 'epi' | 'formations';
+
 interface SubscriptionContextValue {
     subscription: Subscription | null;
     plan: SubscriptionPlan;
@@ -22,7 +27,10 @@ interface SubscriptionContextValue {
     isPro: boolean;
     isPremium: boolean;
     isEnterprise: boolean;
-    canAccess: (feature: 'epi' | 'formations') => boolean;
+    /** Vérifie l'accès à un module selon le plan (User client) */
+    canAccess: (feature: PaidModule) => boolean;
+    /** Vérifie l'accès à n'importe quel module */
+    hasModule: (module: AppModule) => boolean;
 }
 
 const SubscriptionContext = createContext<SubscriptionContextValue>({
@@ -33,6 +41,7 @@ const SubscriptionContext = createContext<SubscriptionContextValue>({
     isPremium: false,
     isEnterprise: false,
     canAccess: () => false,
+    hasModule: () => false,
 });
 
 export function SubscriptionProvider({ children }: { children: React.ReactNode }) {
@@ -77,15 +86,17 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     const isPremium = plan === 'premium' || plan === 'enterprise';
     const isEnterprise = plan === 'enterprise';
 
-    // Basic: DUERP + Registres seulement
-    // Pro+: tout
-    function canAccess(feature: 'epi' | 'formations'): boolean {
-        if (feature === 'epi' || feature === 'formations') return isPro;
-        return true;
+    // User client : accès aux modules selon le plan (basic = base, pro+ = EPI + Formations)
+    function canAccess(feature: PaidModule): boolean {
+        return planHasModule(plan, feature);
+    }
+
+    function hasModule(module: AppModule): boolean {
+        return planHasModule(plan, module);
     }
 
     return (
-        <SubscriptionContext.Provider value={{ subscription, plan, isLoading, isPro, isPremium, isEnterprise, canAccess }}>
+        <SubscriptionContext.Provider value={{ subscription, plan, isLoading, isPro, isPremium, isEnterprise, canAccess, hasModule }}>
             {children}
         </SubscriptionContext.Provider>
     );

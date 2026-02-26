@@ -1,7 +1,7 @@
 'use client';
 
-import { use } from 'react';
 import Link from 'next/link';
+import { useParams } from 'next/navigation';
 import { useDuerpVersions } from '@/hooks/useDuerp';
 import type { DuerpVersion } from '@conform-plus/shared';
 import { Loader2, History, CheckCircle2, XCircle, ArrowLeft } from 'lucide-react';
@@ -17,12 +17,9 @@ function formatDate(dateString: string): string {
   });
 }
 
-export default function DuerpVersionsPage({
-  params,
-}: {
-  params: Promise<{ duerpId: string }>;
-}) {
-  const { duerpId } = use(params);
+export default function DuerpVersionsPage() {
+  const params = useParams();
+  const duerpId = params.duerpId as string;
   const { data, isLoading, error } = useDuerpVersions(duerpId);
   const versions = data as DuerpVersion[] | undefined;
 

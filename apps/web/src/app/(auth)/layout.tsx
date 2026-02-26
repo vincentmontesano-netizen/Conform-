@@ -1,3 +1,6 @@
+import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
+
 export default function AuthLayout({
   children,
 }: {
@@ -47,7 +50,14 @@ export default function AuthLayout({
       </div>
 
       {/* Right panel — form */}
-      <div className="flex flex-1 items-center justify-center px-6 py-12 bg-background">
+      <div className="relative flex flex-1 items-center justify-center px-6 py-12 bg-background">
+        <Link
+          href="/"
+          className="absolute top-6 right-6 flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Retour
+        </Link>
         <div className="w-full max-w-[420px]">{children}</div>
       </div>
     </div>

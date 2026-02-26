@@ -1,7 +1,7 @@
 'use client';
 
-import { use, useState, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useRef } from 'react';
+import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { Loader2, FileText, Upload, X, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -12,12 +12,9 @@ import {
   RegistreType,
 } from '@conform-plus/shared';
 
-export default function NewRegistreEntryPage({
-  params,
-}: {
-  params: Promise<{ type: string }>;
-}) {
-  const { type } = use(params);
+export default function NewRegistreEntryPage() {
+  const params = useParams();
+  const type = params.type as string;
   const router = useRouter();
   const registreType = type as RegistreType;
   const template = REGISTRE_TEMPLATES[registreType];

@@ -26,6 +26,11 @@ export class ComplianceController {
     );
   }
 
+  @Get('evaluate-full')
+  evaluateFull(@CurrentUser() user: any) {
+    return this.complianceService.evaluateFull(user.company_id);
+  }
+
   @Get('score')
   getScore(@CurrentUser() user: any) {
     return this.complianceService.getScore(user.company_id);

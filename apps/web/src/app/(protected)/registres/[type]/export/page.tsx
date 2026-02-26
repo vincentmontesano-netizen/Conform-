@@ -1,7 +1,7 @@
 'use client';
 
-import { use } from 'react';
 import Link from 'next/link';
+import { useParams } from 'next/navigation';
 import { Loader2, FileText, Download, Printer } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useRegistres, useRegistreEntries } from '@/hooks/useRegistre';
@@ -11,12 +11,9 @@ import {
   RegistreType,
 } from '@conform-plus/shared';
 
-export default function RegistreExportPage({
-  params,
-}: {
-  params: Promise<{ type: string }>;
-}) {
-  const { type } = use(params);
+export default function RegistreExportPage() {
+  const params = useParams();
+  const type = params.type as string;
   const registreType = type as RegistreType;
   const template = REGISTRE_TEMPLATES[registreType];
 

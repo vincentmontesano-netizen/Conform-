@@ -2,11 +2,16 @@ import { Sidebar } from '@/components/layout/Sidebar';
 import { SubscriptionProvider } from '@/providers/SubscriptionContext';
 import { ChatbotWidget } from '@/components/ui/ChatbotWidget';
 
-export default function ProtectedLayout({
+export const dynamic = 'force-dynamic';
+
+export default async function ProtectedLayout({
   children,
+  params,
 }: {
   children: React.ReactNode;
+  params?: Promise<Record<string, string | string[]>>;
 }) {
+  if (params) await params;
   return (
     <SubscriptionProvider>
       <div className="flex h-screen bg-background">
@@ -15,8 +20,7 @@ export default function ProtectedLayout({
           {/* Grain texture on main area */}
           <div className="grain pointer-events-none absolute inset-0 opacity-30" />
           <div className="relative z-10 p-8 lg:p-10">{children}</div>
-
-          {/* Widget RAG Mistral (Module 5A) */}
+          {/* Chatbot flottant - icone en bas a droite */}
           <ChatbotWidget />
         </main>
       </div>

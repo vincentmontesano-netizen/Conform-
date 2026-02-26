@@ -1,7 +1,7 @@
 'use client';
 
-import { use, useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { useCompany, useUpdateCompany } from '@/hooks/useCompany';
@@ -11,12 +11,9 @@ import { ZodError } from 'zod';
 
 type FieldErrors = Record<string, string>;
 
-export default function EditCompanyPage({
-  params,
-}: {
-  params: Promise<{ companyId: string }>;
-}) {
-  const { companyId } = use(params);
+export default function EditCompanyPage() {
+  const params = useParams();
+  const companyId = params.companyId as string;
   const router = useRouter();
   const { data: company, isLoading: isLoadingCompany } = useCompany(companyId);
   const updateCompany = useUpdateCompany();

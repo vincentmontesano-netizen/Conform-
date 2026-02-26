@@ -30,6 +30,8 @@ export function useDashboard() {
   return useQuery({
     queryKey: ['dashboard'],
     queryFn: () => api.get<DashboardOverview>('/dashboard'),
+    retry: 1,
+    retryDelay: 2000,
   });
 }
 

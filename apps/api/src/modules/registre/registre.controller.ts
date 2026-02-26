@@ -29,11 +29,13 @@ export class RegistreController {
 
   @Get()
   findAll(@CurrentUser() user: any, @Query('type') type?: string) {
+    if (!user?.company_id) return [];
     return this.registreService.findAll(user.company_id, type);
   }
 
   @Get('expiring')
   getExpiring(@CurrentUser() user: any, @Query('days') days?: string) {
+    if (!user?.company_id) return [];
     return this.registreService.getExpiringEntries(user.company_id, days ? parseInt(days, 10) : 30);
   }
 

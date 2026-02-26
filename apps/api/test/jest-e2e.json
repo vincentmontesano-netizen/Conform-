@@ -7,6 +7,7 @@
     "^.+\\.(t|j)s$": "ts-jest"
   },
   "moduleNameMapper": {
-    "^@conform-plus/shared$": "<rootDir>/../packages/shared/src"
+    "^@conform-plus/shared$": "<rootDir>/../../packages/shared/src",
+    "^(\\.{1,2}/.*)\\.[jt]s$": "$1"
   }
 }

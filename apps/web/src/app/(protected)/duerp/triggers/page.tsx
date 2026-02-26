@@ -34,7 +34,7 @@ export default function TriggersPage() {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const resolveTrigger = useResolveDuerpTrigger();
 
-  const { data: triggers, isLoading, refetch } = useDuerpTriggers(
+  const { data: triggers, isLoading, isError, error, refetch } = useDuerpTriggers(
     tab === 'unresolved' ? false : undefined
   );
 
@@ -108,6 +108,24 @@ export default function TriggersPage() {
       {isLoading ? (
         <div className="flex items-center justify-center py-12">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      ) : isError ? (
+        <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-8 text-center">
+          <AlertTriangle className="mx-auto h-10 w-10 text-destructive/80" />
+          <p className="mt-4 text-sm font-medium text-destructive">
+            Erreur lors du chargement : {error instanceof Error ? error.message : 'Erreur inconnue'}
+          </p>
+          <p className="mt-2 text-xs text-muted-foreground">
+            Verifiez que l&apos;API est demarre (port 3001) et que vous avez une entreprise associee.
+          </p>
+          <button
+            type="button"
+            onClick={() => refetch()}
+            className="mt-4 inline-flex items-center gap-2 rounded-md border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-muted"
+          >
+            <RefreshCw className="h-4 w-4" />
+            Reessayer
+          </button>
         </div>
       ) : !triggers || (triggers as any[]).length === 0 ? (
         <div className="rounded-lg border border-dashed bg-muted/20 p-12 text-center">

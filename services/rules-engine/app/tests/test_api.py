@@ -15,7 +15,7 @@ async def test_health(client):
     data = response.json()
     assert "status" in data
     assert data["status"] == "healthy"
-    assert data["rules_count"] == 4
+    assert data["rules_count"] == 10
 
 
 async def test_evaluate_full(client):
@@ -51,7 +51,7 @@ async def test_evaluate_full(client):
     assert response.status_code == 200
     data = response.json()
     assert "compliance_score" in data
-    assert data["compliance_score"]["total_rules"] == 4
+    assert data["compliance_score"]["total_rules"] == 10
     assert data["compliance_score"]["score"] < 100
     assert len(data["alerts"]) > 0
     assert "evaluated_at" in data

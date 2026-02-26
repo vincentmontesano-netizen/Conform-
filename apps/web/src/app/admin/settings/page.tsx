@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Settings, Save, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { api } from '@/lib/api';
 
 interface AppSetting {
     id: string;
@@ -24,10 +25,7 @@ export default function AdminSettingsPage() {
     async function loadSettings() {
         setIsLoading(true);
         try {
-            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-            const res = await fetch(`${apiUrl}/admin/settings`);
-            if (!res.ok) throw new Error('Erreur de récupération des paramètres');
-            const data = await res.json();
+            const data = await api.get<AppSetting[]>('/admin/settings');
 
             setSettings(data);
 
@@ -54,19 +52,9 @@ export default function AdminSettingsPage() {
         setSuccessMsg('');
 
         try {
-            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-            let newValue = editValues[setting.key];
-
-            // Format parser if needed. (For this MVP, we treat most as string since the backend expects JSONB or primitives which get mapped).
-            // Here we allow boolean strings to become json booleans implicitly, but simplest is sending exactly what's typed
-
-            const res = await fetch(`${apiUrl}/admin/settings/${setting.key}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ value: newValue }),
+            await api.patch(`/admin/settings/${setting.key}`, {
+                value: editValues[setting.key],
             });
-
-            if (!res.ok) throw new Error(`Échec de la sauvegarde pour ${setting.key}`);
 
             setSuccessMsg(`Paramètre ${setting.key} mis à jour avec succès.`);
             await loadSettings();

@@ -1,7 +1,8 @@
 'use client';
 
-import { use, useState } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
+import { useParams } from 'next/navigation';
 import {
   Loader2,
   ArrowLeft,
@@ -21,12 +22,9 @@ import { EpiExpiryBadge } from '@/components/epi/EpiExpiryBadge';
 import { EpiHistoryTimeline } from '@/components/epi/EpiHistoryTimeline';
 import { EpiItemForm } from '@/components/epi/EpiItemForm';
 
-export default function EpiItemDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = use(params);
+export default function EpiItemDetailPage() {
+  const params = useParams();
+  const id = params.id as string;
   const { data: item, isLoading } = useEpiItem(id);
   const updateItem = useUpdateEpiItem();
   const [editing, setEditing] = useState(false);

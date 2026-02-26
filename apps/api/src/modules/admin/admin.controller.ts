@@ -1,7 +1,10 @@
-import { Controller, Get, Patch, Param, Query, Body } from '@nestjs/common';
+import { Controller, Get, Patch, Param, Query, Body, UseGuards } from '@nestjs/common';
 import { AdminService } from './admin.service';
+import { SupabaseAuthGuard } from '../../common/guards/supabase-auth.guard';
+import { SuperAdminGuard } from '../../common/guards/super-admin.guard';
 
 @Controller('admin')
+@UseGuards(SupabaseAuthGuard, SuperAdminGuard)
 export class AdminController {
     constructor(private readonly adminService: AdminService) { }
 

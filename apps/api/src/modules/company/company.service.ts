@@ -41,6 +41,21 @@ export class CompanyService {
       .single();
 
     if (error) throw error;
+
+    // Assigne la nouvelle entreprise à l'utilisateur s'il n'en a pas encore
+    const { data: profile } = await client
+      .from('profiles')
+      .select('company_id')
+      .eq('user_id', userId)
+      .single();
+
+    if (!profile?.company_id && data?.id) {
+      await client
+        .from('profiles')
+        .update({ company_id: data.id })
+        .eq('user_id', userId);
+    }
+
     return data;
   }
 

@@ -15,6 +15,7 @@ import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { CreateCompanyDto } from './dto/create-company.dto';
 import { UpdateCompanyDto } from './dto/update-company.dto';
+import { AllowWhenNoCompany } from '../../common/decorators/roles.decorator';
 
 @Controller('companies')
 @UseGuards(SupabaseAuthGuard, RolesGuard)
@@ -32,7 +33,8 @@ export class CompanyController {
   }
 
   @Post()
-  @Roles('admin')
+  @AllowWhenNoCompany()
+  @Roles('admin', 'super_admin')
   create(@Body() dto: CreateCompanyDto, @CurrentUser() user: any) {
     return this.companyService.create(dto, user.id);
   }

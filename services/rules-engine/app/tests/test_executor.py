@@ -34,6 +34,6 @@ def test_full_evaluation():
     executor = RuleExecutor()
     response = executor.evaluate(request)
 
-    assert response.compliance_score.total_rules == 4
+    assert response.compliance_score.total_rules == 10
     assert response.compliance_score.score < 100
     assert len(response.alerts) > 0

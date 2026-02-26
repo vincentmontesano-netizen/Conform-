@@ -63,6 +63,11 @@
   }
 }
 
+/* Masquer le portal Next.js Dev Tools (conserver le chatbot button) */
+nextjs-portal {
+  display: none !important;
+}
+
 @layer base {
   * {
     @apply border-border;
