@@ -20,6 +20,42 @@ export class CompanyService {
     return data;
   }
 
+  /**
+   * Auto-link: if user has no company_id but companies exist, link the first one.
+   * This handles cases where a company was created directly in Supabase.
+   */
+  async autoLink(userId: string): Promise<{ linked: boolean; company_id: string | null }> {
+    const client = this.supabaseService.getClient();
+
+    // Check if user already has a company
+    const { data: profile } = await client
+      .from('profiles')
+      .select('company_id')
+      .eq('user_id', userId)
+      .single();
+
+    if (profile?.company_id) {
+      return { linked: true, company_id: profile.company_id };
+    }
+
+    // Find any company (for single-company setups)
+    const { data: companies } = await client
+      .from('companies')
+      .select('id')
+      .limit(1);
+
+    if (companies && companies.length > 0) {
+      const companyId = companies[0].id;
+      await client
+        .from('profiles')
+        .update({ company_id: companyId })
+        .eq('user_id', userId);
+      return { linked: true, company_id: companyId };
+    }
+
+    return { linked: false, company_id: null };
+  }
+
   async findOne(id: string) {
     const client = this.supabaseService.getClient();
     const { data, error } = await client

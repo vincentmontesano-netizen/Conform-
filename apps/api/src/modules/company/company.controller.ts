@@ -22,6 +22,12 @@ import { AllowWhenNoCompany } from '../../common/decorators/roles.decorator';
 export class CompanyController {
   constructor(private readonly companyService: CompanyService) {}
 
+  @Get('auto-link')
+  @AllowWhenNoCompany()
+  autoLink(@CurrentUser() user: any) {
+    return this.companyService.autoLink(user.id);
+  }
+
   @Get()
   findAll(@CurrentUser() user: any) {
     return this.companyService.findAll(user.company_id);

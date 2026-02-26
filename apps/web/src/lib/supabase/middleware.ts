@@ -37,8 +37,8 @@ export async function updateSession(request: NextRequest) {
     pathname.startsWith('/forgot-password') ||
     pathname.startsWith('/reset-password');
 
-  const isCallbackRoute = pathname.startsWith('/auth/callback');
-  const isPublicPage = pathname === '/' || isAuthPage || isCallbackRoute;
+  const isAuthRoute = pathname.startsWith('/auth/'); // /auth/callback, /auth/logout
+  const isPublicPage = pathname === '/' || isAuthPage || isAuthRoute;
   const isAdminPage = pathname.startsWith('/admin');
 
   // ─── Unauthenticated: redirect to login ───

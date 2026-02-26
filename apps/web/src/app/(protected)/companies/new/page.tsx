@@ -1,10 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Loader2 } from 'lucide-react';
-import { useCreateCompany } from '@/hooks/useCompany';
+import { ArrowLeft, Loader2, CheckCircle } from 'lucide-react';
+import { useCreateCompany, useAutoLinkCompany } from '@/hooks/useCompany';
 import { SECTORS, createCompanySchema } from '@conform-plus/shared';
 import { cn } from '@/lib/utils';
 import { ZodError } from 'zod';
@@ -14,7 +14,10 @@ type FieldErrors = Record<string, string>;
 export default function NewCompanyPage() {
   const router = useRouter();
   const createCompany = useCreateCompany();
+  const autoLink = useAutoLinkCompany();
 
+  const [autoLinkChecked, setAutoLinkChecked] = useState(false);
+  const [autoLinkLoading, setAutoLinkLoading] = useState(true);
   const [name, setName] = useState('');
   const [siret, setSiret] = useState('');
   const [sector, setSector] = useState('');
@@ -22,6 +25,26 @@ export default function NewCompanyPage() {
   const [hasPhysicalSite, setHasPhysicalSite] = useState(true);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [apiError, setApiError] = useState<string | null>(null);
+
+  // Auto-link: tente de lier une entreprise existante au profil utilisateur
+  useEffect(() => {
+    if (autoLinkChecked) return;
+    setAutoLinkChecked(true);
+
+    autoLink.mutateAsync()
+      .then((result) => {
+        if (result.linked && result.company_id) {
+          // Entreprise trouvee et liee — rediriger vers le dashboard
+          router.push('/dashboard');
+          router.refresh();
+        } else {
+          setAutoLinkLoading(false);
+        }
+      })
+      .catch(() => {
+        setAutoLinkLoading(false);
+      });
+  }, [autoLinkChecked, autoLink, router]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -38,7 +61,8 @@ export default function NewCompanyPage() {
       });
 
       await createCompany.mutateAsync(data);
-      router.push('/companies');
+      router.push('/dashboard');
+      router.refresh();
     } catch (err) {
       if (err instanceof ZodError) {
         const fieldErrors: FieldErrors = {};
@@ -50,9 +74,21 @@ export default function NewCompanyPage() {
         }
         setErrors(fieldErrors);
       } else {
-        setApiError(err instanceof Error ? err.message : 'Erreur lors de la création');
+        setApiError(err instanceof Error ? err.message : 'Erreur lors de la creation');
       }
     }
+  }
+
+  // Afficher un loader pendant la tentative d'auto-link
+  if (autoLinkLoading) {
+    return (
+      <div className="flex items-center justify-center py-32">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="h-6 w-6 animate-spin text-accent" />
+          <span className="text-xs text-muted-foreground">Verification de votre compte...</span>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -66,6 +102,9 @@ export default function NewCompanyPage() {
           Retour aux entreprises
         </Link>
         <h1 className="mt-2 text-2xl font-bold">Nouvelle entreprise</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Creez votre entreprise pour commencer a utiliser Conform+
+        </p>
       </div>
 
       <div className="rounded-lg border bg-card p-6 shadow-sm max-w-2xl">

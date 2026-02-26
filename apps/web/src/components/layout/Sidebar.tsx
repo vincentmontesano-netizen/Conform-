@@ -18,7 +18,6 @@ import {
   Users,
   ClipboardCheck,
 } from 'lucide-react';
-import { createClient } from '@/lib/supabase/client';
 import { cn } from '@/lib/utils';
 import { useSubscription } from '@/providers/SubscriptionContext';
 import { UpsellModal } from '@/components/ui/UpsellModal';
@@ -54,11 +53,9 @@ export function Sidebar() {
     featureName: '',
   });
 
-  async function handleLogout() {
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    // Redirection plein écran vers la landing pour réinitialiser tout l'état client
-    window.location.href = '/';
+  function handleLogout() {
+    // Utilise la route server-side pour garantir la deconnexion meme si le JS client est instable
+    window.location.href = '/auth/logout';
   }
 
   function handleLockedClick(featureName: string) {

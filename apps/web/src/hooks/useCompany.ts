@@ -19,6 +19,12 @@ export function useCompany(id: string) {
   });
 }
 
+export function useAutoLinkCompany() {
+  return useMutation({
+    mutationFn: () => api.get<{ linked: boolean; company_id: string | null }>('/companies/auto-link'),
+  });
+}
+
 export function useCreateCompany() {
   const queryClient = useQueryClient();
   return useMutation({
