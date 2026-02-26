@@ -4,31 +4,66 @@ import { createClient } from '@/lib/supabase/client';
 const base = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
 const API_URL = base.endsWith('/api/v1') ? base : `${base.replace(/\/$/, '')}/api/v1`;
 
-async function getAuthHeaders(): Promise<Record<string, string>> {
-  const supabase = createClient();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+// Anti-redirect-loop guard: prevents infinite 401 → /login → /dashboard → 401 cycles
+let lastAuthRedirectTime = 0;
 
-  if (!session?.access_token) {
-    return { 'Content-Type': 'application/json' };
+// Timeout helper: races a promise against a timer
+function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error(`${label} timeout (${ms}ms)`)), ms);
+    promise
+      .then((v) => { clearTimeout(timer); resolve(v); })
+      .catch((e) => { clearTimeout(timer); reject(e); });
+  });
+}
+
+async function getAuthHeaders(): Promise<Record<string, string>> {
+  try {
+    // Timeout getSession to avoid hanging indefinitely (e.g. if Supabase token refresh stalls)
+    const supabase = createClient();
+    const { data: { session } } = await withTimeout(
+      supabase.auth.getSession(),
+      5000,
+      'getSession',
+    );
+
+    if (session?.access_token) {
+      return {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${session.access_token}`,
+      };
+    }
+    console.warn('[API] No session/access_token available — sending request without auth');
+  } catch (err) {
+    console.warn('[API] getAuthHeaders failed:', err instanceof Error ? err.message : err);
   }
 
-  return {
-    'Content-Type': 'application/json',
-    Authorization: `Bearer ${session.access_token}`,
-  };
+  return { 'Content-Type': 'application/json' };
 }
 
 async function handleResponse<T>(response: Response): Promise<T> {
   if (response.status === 401) {
-    window.location.href = '/login';
-    throw new Error('Non autorise');
+    // Prevent redirect loops: only redirect once every 5 seconds
+    const now = Date.now();
+    if (now - lastAuthRedirectTime > 5000) {
+      lastAuthRedirectTime = now;
+      // Use server-side logout to properly clear session cookies
+      if (typeof window !== 'undefined') {
+        window.location.href = '/auth/logout';
+      }
+    }
+    throw new Error('Session expiree — reconnexion necessaire');
   }
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: 'Erreur serveur' }));
-    throw new Error(error.message || `Erreur ${response.status}`);
+    let errorMessage = `Erreur ${response.status}`;
+    try {
+      const errorBody = await response.json();
+      errorMessage = errorBody.message || errorMessage;
+    } catch {
+      // Response body is not JSON — use status code
+    }
+    throw new Error(errorMessage);
   }
 
   if (response.status === 204) {

@@ -59,16 +59,22 @@ export async function updateSession(request: NextRequest) {
   // ─── Onboarding: redirect to company creation if no company ───
   const isOnboardingExempt =
     pathname.startsWith('/companies/new') ||
-    pathname.startsWith('/companies') && pathname === '/companies' ||
+    (pathname.startsWith('/companies') && pathname === '/companies') ||
+    pathname.startsWith('/employees') ||
     pathname.startsWith('/settings') ||
     pathname.startsWith('/api/');
 
   if (user && !isPublicPage && !isAdminPage && !isOnboardingExempt) {
-    const { data: profile } = await supabase
+    const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('company_id')
       .eq('user_id', user.id)
       .single();
+
+    // If the profile query failed (RLS issue, network, etc.), don't redirect — let the page handle it
+    if (profileError) {
+      return supabaseResponse;
+    }
 
     if (!profile?.company_id) {
       const url = request.nextUrl.clone();
