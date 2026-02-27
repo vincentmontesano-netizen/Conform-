@@ -1,0 +1,5 @@
+# Point d’entrée pour lancer la stack depuis la racine du repo.
+# Usage: docker compose up
+# Pour la prod: docker compose -f docker/docker-compose.prod.yml up -d
+include:
+  - docker/docker-compose.dev.yml

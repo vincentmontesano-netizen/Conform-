@@ -1,0 +1,51 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+**/node_modules/
+
+# Build outputs (reconstruits dans l’image)
+dist/
+.next/
+.turbo/
+out/
+**/.next/
+**/dist/
+
+# Environnement (à fournir au runtime)
+.env
+.env.*
+!.env.example
+
+# Git & IDE
+.git/
+.gitignore
+.vscode/
+.idea/
+*.md
+!docker/README.md
+
+# Tests & couverture
+coverage/
+.nyc_output/
+**/__pycache__/
+**/*.pyc
+.venv/
+venv/
+.pytest_cache/
+*.egg-info/
+
+# Supabase local
+supabase/.temp/
+
+# Docker (éviter boucles)
+docker/*.log
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Optionnel : réduire le contexte
+apps/web/.next
+apps/api/dist
+services/rules-engine/.pytest_cache
