@@ -9,7 +9,7 @@ Stack containerisée : **web** (Next.js), **api** (NestJS), **rules-engine** (Fa
 
 ## Dev (recommandé)
 
-Depuis la **racine du repo** :
+Depuis la **racine du repo** (fichier `docker-compose.yml` à la racine, sans `include`) :
 
 ```bash
 # Lancer toute la stack (web + api + rules-engine)
