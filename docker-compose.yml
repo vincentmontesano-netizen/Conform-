@@ -10,6 +10,7 @@ services:
       - "3000:3000"
     volumes:
       - ./apps/web:/app/apps/web
+      - ./apps/api/package.json:/app/apps/api/package.json:ro
       - ./packages:/app/packages
       - web_node_modules:/app/apps/web/node_modules
       - web_next:/app/apps/web/.next
@@ -28,6 +29,7 @@ services:
       - "3001:3001"
     volumes:
       - ./apps/api:/app/apps/api
+      - ./apps/web/package.json:/app/apps/web/package.json:ro
       - ./packages:/app/packages
       - api_node_modules:/app/apps/api/node_modules
     environment:
@@ -50,7 +52,8 @@ services:
       - ./services/rules-engine/app:/app/app
     environment:
       - ENV=development
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+      - PYTHONPATH=/app
+    command: python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
 volumes:
   web_node_modules:

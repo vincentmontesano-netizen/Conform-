@@ -6,16 +6,15 @@ RUN corepack enable && corepack prepare pnpm@latest --activate
 
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml* turbo.json ./
 COPY apps/web/package.json apps/web/
+COPY apps/api/package.json apps/api/
 COPY packages/shared/package.json packages/shared/
 COPY packages/database/package.json packages/database/
 
-RUN pnpm install --frozen-lockfile || pnpm install
+RUN pnpm install --frozen-lockfile
 
 COPY packages/ packages/
 COPY apps/web/ apps/web/
 
-WORKDIR /app/apps/web
-
 EXPOSE 3000
 
-CMD ["pnpm", "dev"]
+CMD ["pnpm", "--filter", "@conform-plus/web", "dev"]
