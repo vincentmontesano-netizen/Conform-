@@ -1,0 +1,22 @@
+# Overrides de développement local : hot-reload via bind mounts
+# Appliqué automatiquement par `docker compose up` (racine du projet)
+services:
+  web:
+    volumes:
+      - ./apps/web:/app/apps/web
+      - ./packages:/app/packages
+      - web_node_modules:/app/apps/web/node_modules
+
+  api:
+    volumes:
+      - ./apps/api:/app/apps/api
+      - ./packages:/app/packages
+      - api_node_modules:/app/apps/api/node_modules
+
+  rules-engine:
+    volumes:
+      - ./services/rules-engine/app:/app/app
+
+volumes:
+  web_node_modules:
+  api_node_modules:

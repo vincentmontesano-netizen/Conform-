@@ -9,9 +9,6 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - ./apps/web:/app/apps/web
-      - ./packages:/app/packages
-      - web_node_modules:/app/apps/web/node_modules
       - web_next:/app/apps/web/.next
     environment:
       - NEXT_PUBLIC_SUPABASE_URL=${SUPABASE_URL:-http://localhost:54321}
@@ -26,10 +23,6 @@ services:
       dockerfile: docker/Dockerfile.api
     ports:
       - "3001:3001"
-    volumes:
-      - ./apps/api:/app/apps/api
-      - ./packages:/app/packages
-      - api_node_modules:/app/apps/api/node_modules
     environment:
       - SUPABASE_URL=${SUPABASE_URL:-http://localhost:54321}
       - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
@@ -46,14 +39,10 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8000:8000"
-    volumes:
-      - ./services/rules-engine/app:/app/app
     environment:
       - ENV=development
       - PYTHONPATH=/app
     command: python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
 volumes:
-  web_node_modules:
   web_next:
-  api_node_modules:
